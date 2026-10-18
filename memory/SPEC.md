@@ -27,5 +27,5 @@ Demo 1-tap login: GET /api/auth/demo-users (empty list if DEMO_LOGIN_ENABLED!=tr
 auth/register, auth/login, auth/logout, auth/me; GET/POST /matches; DELETE /matches/{id}; POST /matches/{id}/apply; POST /applications/{id}/accept|reject; GET /me/matches, /me/applications, /me/summary.
 
 ## Seed (python seed.py, idempotent)
-4 users (password tennis123): marco@club.it, matteo@club.it, giulia@club.it, lorenzo@club.it.
-Matches: Marco singolo (+1d, Lorenzo pending), Matteo doppio (+2d, Marco accepted), Lorenzo singolo (+3d, confermata with Giulia), Giulia doppio (+4d, no apps).
+4 demo users only (password tennis123): marco@club.it, matteo@club.it, giulia@club.it, lorenzo@club.it.
+No seeded matches: per user request all demo matches/applications were deleted; the board starts empty.
