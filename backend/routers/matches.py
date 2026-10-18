@@ -38,6 +38,7 @@ def to_app(doc: dict) -> Application:
         phone=doc.get("phone", ""),
         message=doc.get("message", ""),
         status=doc["status"],
+        applicant_seen=doc.get("applicant_seen", True),
         created_at=_aware(doc["created_at"]),
     )
 
@@ -163,7 +164,7 @@ async def accept(id: str, user: dict = Depends(current_user)):
     app_doc, match = await _owned_app(id, user)
     if match["status"] != "aperta":
         raise HTTPException(status_code=400, detail="La partita è già confermata")
-    await db.applications.update_one({"id": id}, {"$set": {"status": "accettata"}})
+    await db.applications.update_one({"id": id}, {"$set": {"status": "accettata", "applicant_seen": False}})
     accepted = await db.applications.count_documents({"match_id": match["id"], "status": "accettata"})
     if accepted >= SPOTS[match["type"]]:
         await db.matches.update_one({"id": match["id"]}, {"$set": {"status": "confermata"}})
@@ -171,6 +172,7 @@ async def accept(id: str, user: dict = Depends(current_user)):
             {"match_id": match["id"], "status": "in_attesa"}, {"$set": {"status": "rifiutata"}}
         )
     app_doc["status"] = "accettata"
+    app_doc["applicant_seen"] = False
     return to_app(app_doc)
 
 
@@ -251,4 +253,16 @@ async def summary(user: dict = Depends(current_user)):
     my_ids = [d["id"] for d in await db.matches.find({"owner_id": user["id"], "status": "aperta"}, {"id": 1}).to_list(500)]
     pending = await db.applications.count_documents({"match_id": {"$in": my_ids}, "status": "in_attesa"})
     accepted = await db.applications.count_documents({"user_id": user["id"], "status": "accettata"})
-    return Summary(pending_reviews=pending, accepted_applications=accepted)
+    new_acc = await db.applications.count_documents(
+        {"user_id": user["id"], "status": "accettata", "applicant_seen": False}
+    )
+    return Summary(pending_reviews=pending, accepted_applications=accepted, new_acceptances=new_acc)
+
+
+@router.post("/me/applications/seen", response_model=Summary)
+async def mark_acceptances_seen(user: dict = Depends(current_user)):
+    """Applicant opened 'Le mie candidature': clear the new-acceptance notification."""
+    await db.applications.update_many(
+        {"user_id": user["id"], "applicant_seen": False}, {"$set": {"applicant_seen": True}}
+    )
+    return await summary(user)

@@ -1,8 +1,9 @@
+import { useEffect } from "react";
 import { Link } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
-import { Phone } from "lucide-react";
-import { apiGet } from "@/lib/api";
-import type { MyApplication } from "@/lib/types";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { PartyPopper, Phone } from "lucide-react";
+import { apiGet, apiPost } from "@/lib/api";
+import type { MyApplication, Summary } from "@/lib/types";
 import { telHref } from "@/lib/format";
 import MatchCard from "@/components/MatchCard";
 import { buttonVariants } from "@/components/ui/button";
@@ -17,6 +18,17 @@ const STATUS = {
 export default function MieCandidature() {
   const data = useQuery({ queryKey: ["my-applications"], queryFn: () => apiGet<MyApplication[]>("/me/applications") });
   const items = data.isError ? [] : (data.data ?? []);
+  const qc = useQueryClient();
+  const hasUnseen = items.some((x) => !x.application.applicant_seen);
+  // Opening this page acknowledges new acceptances (idempotent, so StrictMode's double effect is harmless).
+  const markSeen = useMutation({
+    mutationFn: () => apiPost<Summary>("/me/applications/seen"),
+    onSuccess: (s) => qc.setQueryData(["summary"], s),
+  });
+  const { mutate } = markSeen;
+  useEffect(() => {
+    if (hasUnseen) mutate();
+  }, [hasUnseen, mutate]);
 
   return (
     <div>
@@ -40,6 +52,11 @@ export default function MieCandidature() {
                 {STATUS[a.status].label}
               </span>
               {match.status === "annullata" && <span className="text-xs font-semibold text-[#F87171]">Partita annullata</span>}
+              {!a.applicant_seen && (
+                <span data-testid="my-application-new-badge" className="inline-flex items-center gap-1 rounded-full bg-[#EAB308] px-2.5 py-1 text-xs font-bold text-[#0B1118]">
+                  <PartyPopper className="size-3.5" /> Nuovo
+                </span>
+              )}
             </div>
             <MatchCard match={match} index={i} />
             {contacts.length > 0 && (

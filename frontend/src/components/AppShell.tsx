@@ -1,4 +1,6 @@
+import { useEffect } from "react";
 import { NavLink, Navigate, Outlet } from "react-router-dom";
+import { toast } from "sonner";
 import { CalendarCheck, Handshake, LayoutList, LogOut, PlusCircle } from "lucide-react";
 import { ApiError } from "@/lib/api";
 import { useMe, useSummary } from "@/lib/hooks";
@@ -22,25 +24,34 @@ function navLinkClass({ isActive }: { isActive: boolean }) {
   );
 }
 
-function AppHeader({ user, pending }: { user: User | undefined; pending: number }) {
+function AppHeader({ user, pending, newAcc }: { user: User | undefined; pending: number; newAcc: number }) {
   return (
     <header
       data-testid="app-header"
       className="sticky top-0 z-30 flex items-center justify-between border-b border-border bg-[#0B1118]/85 px-4 py-3 backdrop-blur-xl"
     >
-      <div className="flex items-center gap-2.5" data-testid="club-brand-logo">
-        <img src="/crest.png" alt="Stemma Tennis Club Montalto" data-testid="club-crest" className="size-9 rounded-full bg-white ring-2 ring-white/70" />
-        <div className="leading-tight">
-          <p className="font-heading text-[15px] font-semibold tracking-tight">Tennis Club Montalto</p>
+      <div className="flex min-w-0 items-center gap-2.5" data-testid="club-brand-logo">
+        <img src="/crest.png" alt="Stemma Tennis Club Montalto" data-testid="club-crest" className="size-9 shrink-0 rounded-full bg-white ring-2 ring-white/70" />
+        <div className="min-w-0 leading-tight">
+          <p className="truncate font-heading text-[15px] font-semibold tracking-tight">Tennis Club Montalto</p>
           <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Bacheca partite</p>
         </div>
       </div>
-      <div className="flex items-center gap-2">
+      <div className="flex shrink-0 items-center gap-2">
+        {newAcc > 0 && (
+          <NavLink
+            to="/le-mie-candidature"
+            data-testid="header-accepted-badge"
+            className="whitespace-nowrap rounded-full bg-[#14532D] px-2.5 py-1 text-xs font-semibold text-[#DCFCE7] ring-1 ring-[#4ADE80]/60"
+          >
+            {newAcc === 1 ? "In campo!" : `${newAcc} accettate`}
+          </NavLink>
+        )}
         {pending > 0 && (
           <NavLink
             to="/le-mie-partite"
             data-testid="header-pending-badge"
-            className="animate-pulse-ring rounded-full bg-[#713F12] px-2.5 py-1 text-xs font-semibold text-[#FEF08A]"
+            className="animate-pulse-ring whitespace-nowrap rounded-full bg-[#713F12] px-2.5 py-1 text-xs font-semibold text-[#FEF08A]"
           >
             {pending} da valutare
           </NavLink>
@@ -66,7 +77,7 @@ function AppHeader({ user, pending }: { user: User | undefined; pending: number 
   );
 }
 
-function BottomNav({ pending }: { pending: number }) {
+function BottomNav({ pending, newAcc }: { pending: number; newAcc: number }) {
   return (
     <nav
       data-testid="bottom-nav"
@@ -86,6 +97,14 @@ function BottomNav({ pending }: { pending: number }) {
                     {pending}
                   </span>
                 )}
+                {to === "/le-mie-candidature" && newAcc > 0 && (
+                  <span
+                    data-testid="nav-accepted-count"
+                    className="absolute -right-2.5 -top-1.5 grid size-4 place-items-center rounded-full bg-[#4ADE80] text-[10px] font-bold text-[#0B1118]"
+                  >
+                    {newAcc}
+                  </span>
+                )}
               </span>
               {label}
             </NavLink>
@@ -100,20 +119,31 @@ export default function AppShell() {
   const me = useMe();
   const summary = useSummary(!!me.data && !me.isError);
 
+  const pending = summary.data?.pending_reviews ?? 0;
+  const newAcc = summary.data?.new_acceptances ?? 0;
+
+  useEffect(() => {
+    if (newAcc > 0) {
+      // Fixed id: StrictMode double-run and 30s polling never stack duplicate toasts.
+      toast.success(
+        newAcc === 1 ? "La tua candidatura è stata accettata! Sei in campo 🎾" : `${newAcc} candidature accettate! Sei in campo 🎾`,
+        { id: "new-acceptances", description: "Apri Candidature per vedere i contatti dei giocatori." },
+      );
+    }
+  }, [newAcc]);
+
   if (me.error instanceof ApiError && me.error.status === 401) {
     return <Navigate to="/login" replace />;
   }
 
-  const pending = summary.data?.pending_reviews ?? 0;
-
   return (
     <div className="min-h-dvh bg-background">
       <div className="mx-auto flex min-h-dvh max-w-md flex-col border-x border-border/60 bg-background">
-        <AppHeader user={me.data} pending={pending} />
+        <AppHeader user={me.data} pending={pending} newAcc={newAcc} />
         <main className="flex-1 px-4 pb-28 pt-4">
           {me.isLoading ? <div className="h-48 animate-pulse rounded-2xl bg-secondary" /> : <Outlet />}
         </main>
-        <BottomNav pending={pending} />
+        <BottomNav pending={pending} newAcc={newAcc} />
       </div>
       <Toaster richColors />
     </div>

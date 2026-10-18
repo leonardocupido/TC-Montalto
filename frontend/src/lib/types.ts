@@ -83,6 +83,7 @@ export interface Application {
   phone: string;
   message: string;
   status: AppStatus;
+  applicant_seen: boolean;
   created_at: string;
 }
 
@@ -106,6 +107,7 @@ export interface MyApplication {
 export interface Summary {
   pending_reviews: number;
   accepted_applications: number;
+  new_acceptances: number;
 }
 
 export function errorMessage(err: unknown, fallback = "Si è verificato un errore"): string {

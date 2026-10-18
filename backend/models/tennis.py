@@ -86,6 +86,7 @@ class Application(BaseModel):
     phone: str
     message: str
     status: AppStatus
+    applicant_seen: bool = True
     created_at: datetime
 
 
@@ -109,3 +110,4 @@ class MyApplication(BaseModel):
 class Summary(BaseModel):
     pending_reviews: int
     accepted_applications: int
+    new_acceptances: int = 0

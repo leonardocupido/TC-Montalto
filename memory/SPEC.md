@@ -21,6 +21,7 @@ Demo 1-tap login: GET /api/auth/demo-users (empty list if DEMO_LOGIN_ENABLED!=tr
 - Board shows matches with date >= today (Europe/Rome), not annullata.
 - Accepted applicant sees contacts (proponente + other accepted players) in "Le mie candidature".
 - Owner sees pending badge (header + nav) via /api/me/summary.
+- Applicant acceptance notification: accepting sets application.applicant_seen=false; /api/me/summary.new_acceptances counts them → green header badge "In campo!" (header-accepted-badge), green count on Candidature tab (nav-accepted-count), toast. Opening /le-mie-candidature calls POST /api/me/applications/seen which clears them; items show "Nuovo" badge (my-application-new-badge) for that visit.
 - Promemoria: GET /api/me/today returns today's (Europe/Rome) non-cancelled matches where user is proponent or accepted player; Bacheca shows a yellow "Oggi si gioca!" banner with time, type, status and confirmed players.
 
 ## Endpoints (/api)
