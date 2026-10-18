@@ -62,9 +62,11 @@ async def get_status_checks():
 
 from routers.auth import router as auth_router  # noqa: E402
 from routers.matches import router as matches_router  # noqa: E402
+from routers.cron import router as cron_router  # noqa: E402
 
 api_router.include_router(auth_router)
 api_router.include_router(matches_router)
+api_router.include_router(cron_router)
 
 # Include the router in the main app
 app.include_router(api_router)

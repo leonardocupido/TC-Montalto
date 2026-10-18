@@ -27,6 +27,9 @@ Demo 1-tap login: GET /api/auth/demo-users (empty list if DEMO_LOGIN_ENABLED!=tr
 ## Endpoints (/api)
 auth/register, auth/login, auth/logout, auth/me; GET/POST /matches; DELETE /matches/{id}; POST /matches/{id}/apply; POST /applications/{id}/accept|reject; GET /me/matches, /me/applications, /me/summary.
 
+## Scheduled cleanup
+`.emergent/crons.yml` → `cleanup-past-matches` daily 03:00 Europe/Rome → POST /api/cron/cleanup-past (Bearer WEBHOOK_CRON_SECRET from backend/.env; 401 on bad auth, 400 bad body, 202 ack; idempotent via cron_runs.run_id; deletes in background matches with date < today (Europe/Rome) and their applications).
+
 ## Seed (python seed.py, idempotent)
 4 demo users only (password tennis123): marco@club.it, matteo@club.it, giulia@club.it, lorenzo@club.it.
 No seeded matches: per user request all demo matches/applications were deleted; the board starts empty.
