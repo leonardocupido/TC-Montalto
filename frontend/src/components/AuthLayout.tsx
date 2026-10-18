@@ -19,7 +19,7 @@ export default function AuthLayout({ title, subtitle, children }: { title: strin
       />
       <div className="relative mx-auto flex min-h-dvh max-w-md flex-col px-5 pb-10 pt-14">
         <div className="flex items-center gap-2.5">
-          <span className="animate-ball inline-block size-8 rounded-full bg-[#D9F99D] ring-2 ring-white/70" />
+          <img src="/crest.png" alt="Stemma Tennis Club Montalto" data-testid="auth-club-crest" className="size-14 rounded-full bg-white ring-2 ring-white/70" />
           <span className="font-heading text-sm font-bold uppercase tracking-[0.2em] text-slate-300">Tennis Club Montalto</span>
         </div>
         <h1 className="mt-10 font-heading text-4xl font-semibold leading-[1.05] tracking-tight text-white">{title}</h1>

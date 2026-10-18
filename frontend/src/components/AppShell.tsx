@@ -32,7 +32,7 @@ export default function AppShell() {
           className="sticky top-0 z-30 flex items-center justify-between border-b border-border bg-[#0B1118]/85 px-4 py-3 backdrop-blur-xl"
         >
           <div className="flex items-center gap-2.5" data-testid="club-brand-logo">
-            <span className="animate-ball inline-block size-7 rounded-full bg-[#D9F99D] shadow-[inset_-3px_-3px_0_rgba(0,0,0,0.15)] ring-2 ring-white/70" />
+            <img src="/crest.png" alt="Stemma Tennis Club Montalto" data-testid="club-crest" className="size-9 rounded-full bg-white ring-2 ring-white/70" />
             <div className="leading-tight">
               <p className="font-heading text-[15px] font-semibold tracking-tight">Tennis Club Montalto</p>
               <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Bacheca partite</p>
