@@ -29,6 +29,7 @@ export default function Proponi() {
       toast.success("Partita pubblicata in bacheca!");
       void qc.invalidateQueries({ queryKey: ["matches"] });
       void qc.invalidateQueries({ queryKey: ["my-matches"] });
+      void qc.invalidateQueries({ queryKey: ["today"] });
       navigate("/le-mie-partite");
     },
     onError: (e) => toast.error(errorMessage(e, "Impossibile pubblicare la partita")),

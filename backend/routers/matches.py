@@ -223,6 +223,29 @@ async def my_applications(user: dict = Depends(current_user)):
     return out
 
 
+@router.get("/me/today", response_model=list[Match])
+async def my_today(user: dict = Depends(current_user)):
+    """Matches happening today (Europe/Rome) where the user is proponent or accepted player."""
+    today = today_iso("Europe/Rome")
+    accepted_ids = [
+        a["match_id"]
+        for a in await db.applications.find({"user_id": user["id"], "status": "accettata"}, {"match_id": 1}).to_list(500)
+    ]
+    docs = (
+        await db.matches.find(
+            {
+                "date": today,
+                "status": {"$ne": "annullata"},
+                "$or": [{"owner_id": user["id"]}, {"id": {"$in": accepted_ids}}],
+            },
+            {"_id": 0},
+        )
+        .sort("time", 1)
+        .to_list(50)
+    )
+    return await build_matches(docs, user["id"])
+
+
 @router.get("/me/summary", response_model=Summary)
 async def summary(user: dict = Depends(current_user)):
     my_ids = [d["id"] for d in await db.matches.find({"owner_id": user["id"], "status": "aperta"}, {"id": 1}).to_list(500)]

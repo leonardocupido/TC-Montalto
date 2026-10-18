@@ -20,6 +20,7 @@ Email + password, free registration. Session = httpOnly cookie `tc_session` (ses
 - Board shows matches with date >= today (Europe/Rome), not annullata.
 - Accepted applicant sees contacts (proponente + other accepted players) in "Le mie candidature".
 - Owner sees pending badge (header + nav) via /api/me/summary.
+- Promemoria: GET /api/me/today returns today's (Europe/Rome) non-cancelled matches where user is proponent or accepted player; Bacheca shows a yellow "Oggi si gioca!" banner with time, type, status and confirmed players.
 
 ## Endpoints (/api)
 auth/register, auth/login, auth/logout, auth/me; GET/POST /matches; DELETE /matches/{id}; POST /matches/{id}/apply; POST /applications/{id}/accept|reject; GET /me/matches, /me/applications, /me/summary.

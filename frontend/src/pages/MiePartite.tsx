@@ -20,7 +20,7 @@ export default function MiePartite() {
   const data = useQuery({ queryKey: ["my-matches"], queryFn: () => apiGet<OwnedMatch[]>("/me/matches") });
 
   const refresh = () => {
-    for (const k of ["my-matches", "matches", "summary"]) void qc.invalidateQueries({ queryKey: [k] });
+    for (const k of ["my-matches", "matches", "summary", "today"]) void qc.invalidateQueries({ queryKey: [k] });
   };
 
   const decide = useMutation({
