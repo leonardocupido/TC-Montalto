@@ -1,0 +1,257 @@
+{
+  "theme": "dark",
+  "archetype": "THE PERFORMANCE PRO + PRESTIGE CLUB (Deep Obsidian, Court Terracotta / Forest Emerald accents, Volt White text)",
+  "language": "it",
+  "fonts": {
+    "heading": "Outfit, sans-serif",
+    "body": "DM Sans, sans-serif",
+    "mono": "JetBrains Mono, monospace",
+    "import_lines": [
+      "@import \"@fontsource-variable/outfit\";",
+      "@import \"@fontsource-variable/dm-sans\";",
+      "@import \"@fontsource-variable/jetbrains-mono\";"
+    ],
+    "css_vars": {
+      "--font-heading": "'Outfit Variable', sans-serif",
+      "--font-sans": "'DM Sans Variable', sans-serif",
+      "--font-mono": "'JetBrains Mono Variable', monospace"
+    }
+  },
+  "typography": {
+    "scale_px": {
+      "display": 48,
+      "h1": 36,
+      "h2": 28,
+      "h3": 22,
+      "body": 16,
+      "caption": 14
+    },
+    "hierarchy_rules": {
+      "headings": "font-heading font-semibold tracking-tight text-white",
+      "subheadings": "font-heading font-medium tracking-normal text-slate-300",
+      "body": "font-sans text-base leading-relaxed text-slate-200",
+      "labels": "font-sans uppercase text-xs tracking-wider text-slate-400 font-bold",
+      "pills_badges": "font-sans font-semibold text-xs tracking-tight"
+    }
+  },
+  "colors": {
+    "surfaces": [
+      {
+        "name": "page",
+        "kind": "solid",
+        "bg": "#0B1118",
+        "on_bg": "#F8FAFC",
+        "on_bg_muted": "#94A3B8",
+        "roles": {
+          "link": "#38BDF8",
+          "error": "#F87171",
+          "success": "#4ADE80",
+          "warning": "#FBBF24"
+        }
+      },
+      {
+        "name": "panel",
+        "kind": "solid",
+        "bg": "#131C28",
+        "on_bg": "#F8FAFC",
+        "on_bg_muted": "#94A3B8",
+        "roles": {
+          "border": "#223145",
+          "hover": "#1A2636"
+        }
+      },
+      {
+        "name": "card_singolo",
+        "kind": "solid",
+        "bg": "#11221C",
+        "on_bg": "#F0FDF4",
+        "on_bg_muted": "#86EFAC",
+        "roles": {
+          "border": "#166534",
+          "tag": "#22C55E"
+        }
+      },
+      {
+        "name": "card_doppio",
+        "kind": "solid",
+        "bg": "#221711",
+        "on_bg": "#FFF7ED",
+        "on_bg_muted": "#FDBA74",
+        "roles": {
+          "border": "#9A3412",
+          "tag": "#F97316"
+        }
+      },
+      {
+        "name": "badge_open",
+        "kind": "solid",
+        "bg": "#14532D",
+        "on_bg": "#DCFCE7",
+        "on_bg_muted": "#BBF7D0"
+      },
+      {
+        "name": "badge_confirmed",
+        "kind": "solid",
+        "bg": "#1E293B",
+        "on_bg": "#CBD5E1",
+        "on_bg_muted": "#94A3B8"
+      },
+      {
+        "name": "badge_pending",
+        "kind": "solid",
+        "bg": "#713F12",
+        "on_bg": "#FEF08A",
+        "on_bg_muted": "#FDE047"
+      },
+      {
+        "name": "inverse",
+        "kind": "solid",
+        "bg": "#F8FAFC",
+        "on_bg": "#0F172A",
+        "on_bg_muted": "#475569"
+      },
+      {
+        "name": "hero",
+        "kind": "image",
+        "contrast_against": "#0B1118",
+        "guarantee": "scrim: linear-gradient(180deg, rgba(11,17,24,0.85) 0%, rgba(11,17,24,0.95) 100%)",
+        "on_bg": "#FFFFFF",
+        "on_bg_muted": "#CBD5E1",
+        "roles": {
+          "link": "#38BDF8",
+          "error": "#F87171",
+          "success": "#4ADE80"
+        }
+      },
+      {
+        "name": "bottom_nav",
+        "kind": "glass",
+        "contrast_against": "#0B1118",
+        "guarantee": "backdrop-blur-xl bg-[#0B1118]/90 border-t border-[#223145]",
+        "on_bg": "#F8FAFC",
+        "on_bg_muted": "#94A3B8"
+      }
+    ],
+    "accent": "#10B981",
+    "on_accent": "#022C22",
+    "brand_clay": "#EA580C",
+    "brand_grass": "#10B981",
+    "brand_gold": "#EAB308"
+  },
+  "entry_surfaces": {
+    "/": "mobile-first athletic bacheca hero with active match count banner, quick filters (Tutti, Singolo, Doppio, Mie), floating 'Proponi' FAB and live match feed",
+    "/login": "branded tennis club portal header with clay court texture background, quick member credential login form, demo soci switcher for instant testing",
+    "/register": "clean membership onboarding card with full name, skill level self-assessment, phone number for match WhatsApp-free coordination, and password creation"
+  },
+  "layouts_and_navigation": {
+    "viewport_strategy": "Mobile-First (max-w-md mx-auto on desktop with subtle device framing or clean centered container, full width on real mobile viewports)",
+    "header": {
+      "style": "Sticky top bar with Tennis Club Crest, quick member avatar, pending candidate badge count notification, and Logout button",
+      "data_testids": {
+        "header": "app-header",
+        "club_logo": "club-brand-logo",
+        "user_profile": "header-user-avatar",
+        "notifications_badge": "header-pending-badge"
+      }
+    },
+    "bottom_navigation": {
+      "description": "Fixed bottom tab bar for frictionless one-thumb thumb-zone mobile navigation (iOS/Android feel)",
+      "items": [
+        { "id": "bacheca", "label": "Bacheca", "icon": "Flame / Trophy", "route": "/", "test_id": "nav-bacheca-tab" },
+        { "id": "mie_partite", "label": "Le Mie Partite", "icon": "CalendarCheck", "route": "/le-mie-partite", "test_id": "nav-mie-partite-tab" },
+        { "id": "mie_candidature", "label": "Candidature", "icon": "Handshake / Users", "route": "/le-mie-candidature", "test_id": "nav-mie-candidature-tab" },
+        { "id": "proponi", "label": "Proponi", "icon": "PlusCircle (Elevated Accent CTA)", "route": "/proponi", "test_id": "nav-proponi-tab" }
+      ]
+    }
+  },
+  "key_features_and_components": {
+    "bacheca_feed": {
+      "description": "List of available tennis matches with real-time open spots, proposer card, court surface indicator, date & time, level tag, and 1-tap 'Mi candido' trigger",
+      "match_card_elements": [
+        "Status badge: '🟢 Aperta' vs '🔒 Confermata' / 'Posti Esauriti'",
+        "Match Type pill: '🎾 Singolo (1 posto)' or '👥 Doppio (3 posti)'",
+        "Date & Time: Format 'Sabato 15 Ottobre • 18:30 - 20:00'",
+        "Proposer Member: Name + Avatar + 'Livello Club: Intermedio (3.4 / 4.1)'",
+        "Confirmed Players Roster: Circular avatars with empty slot placeholders ('+1 cercasi' / '+3 cercasi')",
+        "Notes/Campo: e.g., 'Campo 2 Terra Rossa, porto io le palline nuove'",
+        "CTA Button: 'Mi Candido' with dialog trigger or 'Candidatura Inviata' (if user applied) or 'Tua Partita' (if owner)"
+      ]
+    },
+    "candidacy_dialog": {
+      "description": "Mi Candido modal popup collecting member phone/contact, preferred hand/level message, and optional note to proposer",
+      "fields": ["Messaggio / Disponibilità (es. 'Posso arrivare 10 min prima, gioco a destra')", "Telefono di contatto"],
+      "test_id": "candidacy-modal-submit"
+    },
+    "propose_match_form": {
+      "description": "Frictionless match creation form with sensible defaults",
+      "fields": [
+        "Tipo Partita: Singolo (1 avversario) vs Doppio (3 giocatori)",
+        "Data: Date picker with quick 'Oggi', 'Domani', 'Questo Weekend'",
+        "Ora di inizio: Time select (es. 09:00 - 21:00 ad intervalli di 30 min)",
+        "Durata: 60 min o 90 min",
+        "Livello consigliato: testo libero o badge rapidi ('Principiante (NC)', 'Intermedio (4.1-4.4)', 'Avanzato (3.1-3.5)', 'Aperto a tutti')",
+        "Note/Campo: Note facoltative (es. 'Campo già prenotato', 'Cerco mancino per doppio')"
+      ],
+      "test_id": "propose-match-submit-button"
+    },
+    "manage_my_matches": {
+      "description": "Owner dashboard for proposer: view applicants per match, quick 'Accetta' / 'Rifiuta' actions, live spot fill counter, auto-close when full",
+      "actions": ["accept-candidacy-btn", "reject-candidacy-btn", "cancel-match-btn"]
+    },
+    "my_applications": {
+      "description": "Player view of own applied matches with clear status chips (In attesa / Accettata / Rifiutata) and proposer contact reveal on acceptance",
+      "test_id": "my-applications-list"
+    },
+    "demo_soci_switcher": {
+      "description": "Quick profile toggle bar at the bottom or login for instant testing of multi-user match proposals and candidacy approvals without retyping logins",
+      "personas": [
+        {"name": "Marco Rossi", "level": "Intermedio (4.2)", "phone": "+39 338 1234567"},
+        {"name": "Matteo Bianchi", "level": "Avanzato (3.4)", "phone": "+39 340 7654321"},
+        {"name": "Giulia Ferrari", "level": "Principiante (NC)", "phone": "+39 339 9876543"},
+        {"name": "Lorenzo Conti", "level": "Intermedio (4.1)", "phone": "+39 347 5551234"}
+      ]
+    }
+  },
+  "image_urls": {
+    "hero_court_bg": {
+      "url": "https://images.unsplash.com/photo-1751275061929-2f63fc96838c?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDQ2Mzl8MHwxfHNlYXJjaHwzfHxjbGF5JTIwdGVubmlzJTIwY291cnR8ZW58MHx8fHwxNzkyMzI5MDA5fDA&ixlib=rb-4.1.0&q=85",
+      "alt": "Terra rossa del Tennis Club",
+      "description": "Atmospheric clay tennis court background for club header and auth backdrop"
+    },
+    "court_texture": {
+      "url": "https://images.unsplash.com/photo-1750858287302-99beb3cd0d35?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDQ2Mzl8MHwxfHNlYXJjaHw0fHxjbGF5JTIwdGVubmlzJTIwY291cnR8ZW58MHx8fHwxNzkyMzI5MDA5fDA&ixlib=rb-4.1.0&q=85",
+      "alt": "Linee campo tennis in terra",
+      "description": "Tennis court baseline detail for subtle match card banners"
+    },
+    "avatar_placeholder_player": {
+      "url": "https://images.unsplash.com/photo-1554068865-24cecd4e34b8?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1OTV8MHwxfHNlYXJjaHwxfHx0ZW5uaXMlMjBtYXRjaCUyMHBsYXllcnxlbnwwfHx8fDE3OTIzMjkwMTJ8MA&ixlib=rb-4.1.0&q=85",
+      "alt": "Socio del Tennis Club in campo",
+      "description": "Tennis player action portrait"
+    }
+  },
+  "motion": {
+    "library": "motion/react",
+    "transitions": {
+      "page_entrance": "opacity 0.25s ease-out, transform 0.25s ease-out",
+      "card_hover": "transform 0.15s ease-in-out, border-color 0.15s ease-in-out",
+      "candidacy_dialog": "scale 0.2s cubic-bezier(0.16, 1, 0.3, 1)"
+    },
+    "micro_interactions": "Subtle scale-95 on active buttons, glowing border accent on pending matches with action required"
+  },
+  "accessibility": {
+    "apca_contrast": "All text tokens meet AA standards (4.5:1 minimum on solid dark slate backgrounds)",
+    "mobile_touch_targets": "Minimum 44x44px hit areas on all buttons, tabs, and action cards",
+    "screen_readers": "Aria labels on icon-only buttons (notifications, close dialog, call/contact button)",
+    "prefers_reduced_motion": "All motion.div respect reduced motion with immediate fallback"
+  },
+  "instructions_to_main_agent": [
+    "Build the app in Italian with mobile-first layout (styled like a native club app with smooth tabs and sticky header).",
+    "Implement full mock & persistent backend support in FastAPI with seed matches and users so it works seamlessly immediately.",
+    "Implement auth session management using lib/session.ts and provide a 1-tap 'Accedi come Socio Demo' switcher on login page and header so anyone testing can switch between Proposer (Marco Rossi) and Applicant (Matteo Bianchi / Giulia Ferrari).",
+    "Ensure match spots calculation is exact: 'Singolo' requires 1 extra player (total 2), 'Doppio' requires 3 extra players (total 4). When accepted candidates fill the required slots, the match automatically turns 'Confermata' (Posti esauriti).",
+    "Proposer gets a notification badge count on 'Le mie partite' for unreviewed applications, with instant 'Accetta' and 'Rifiuta' buttons.",
+    "Candidate gets instant real-time status in 'Le mie candidature' ('In attesa', 'Accettata - Sei in campo! 🎉', 'Rifiutata').",
+    "Add filters on Bacheca: 'Tutti', 'Solo Singoli', 'Solo Doppi', 'Solo Aperte', 'Livello'.",
+    "Include mandatory data-testid on every interactive element (data-testid='login-submit-button', data-testid='apply-match-button', data-testid='accept-candidate-btn', data-testid='match-card-item', etc.)."
+  ]
+}
