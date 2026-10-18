@@ -24,7 +24,7 @@ function navLinkClass({ isActive }: { isActive: boolean }) {
   );
 }
 
-function AppHeader({ user, pending, newAcc }: { user: User | undefined; pending: number; newAcc: number }) {
+function AppHeader({ user, pending, newAcc, newCanc }: { user: User | undefined; pending: number; newAcc: number; newCanc: number }) {
   return (
     <header
       data-testid="app-header"
@@ -38,7 +38,16 @@ function AppHeader({ user, pending, newAcc }: { user: User | undefined; pending:
         </div>
       </div>
       <div className="flex shrink-0 items-center gap-2">
-        {newAcc > 0 && (
+        {newCanc > 0 && (
+          <NavLink
+            to="/le-mie-candidature"
+            data-testid="header-cancelled-badge"
+            className="whitespace-nowrap rounded-full bg-[#7F1D1D] px-2.5 py-1 text-xs font-semibold text-[#FECACA] ring-1 ring-[#F87171]/60"
+          >
+            {newCanc === 1 ? "Annullata" : `${newCanc} annullate`}
+          </NavLink>
+        )}
+        {newCanc === 0 && newAcc > 0 && (
           <NavLink
             to="/le-mie-candidature"
             data-testid="header-accepted-badge"
@@ -77,7 +86,7 @@ function AppHeader({ user, pending, newAcc }: { user: User | undefined; pending:
   );
 }
 
-function BottomNav({ pending, newAcc }: { pending: number; newAcc: number }) {
+function BottomNav({ pending, newAcc, newCanc }: { pending: number; newAcc: number; newCanc: number }) {
   return (
     <nav
       data-testid="bottom-nav"
@@ -97,12 +106,15 @@ function BottomNav({ pending, newAcc }: { pending: number; newAcc: number }) {
                     {pending}
                   </span>
                 )}
-                {to === "/le-mie-candidature" && newAcc > 0 && (
+                {to === "/le-mie-candidature" && newAcc + newCanc > 0 && (
                   <span
                     data-testid="nav-accepted-count"
-                    className="absolute -right-2.5 -top-1.5 grid size-4 place-items-center rounded-full bg-[#4ADE80] text-[10px] font-bold text-[#0B1118]"
+                    className={cn(
+                      "absolute -right-2.5 -top-1.5 grid size-4 place-items-center rounded-full text-[10px] font-bold text-[#0B1118]",
+                      newCanc > 0 ? "bg-[#F87171]" : "bg-[#4ADE80]",
+                    )}
                   >
-                    {newAcc}
+                    {newAcc + newCanc}
                   </span>
                 )}
               </span>
@@ -121,6 +133,7 @@ export default function AppShell() {
 
   const pending = summary.data?.pending_reviews ?? 0;
   const newAcc = summary.data?.new_acceptances ?? 0;
+  const newCanc = summary.data?.new_cancellations ?? 0;
 
   useEffect(() => {
     if (newAcc > 0) {
@@ -132,6 +145,15 @@ export default function AppShell() {
     }
   }, [newAcc]);
 
+  useEffect(() => {
+    if (newCanc > 0) {
+      toast.error(
+        newCanc === 1 ? "Una partita a cui partecipavi è stata annullata" : `${newCanc} partite a cui partecipavi sono state annullate`,
+        { id: "new-cancellations", description: "Apri Candidature per i dettagli." },
+      );
+    }
+  }, [newCanc]);
+
   if (me.error instanceof ApiError && me.error.status === 401) {
     return <Navigate to="/login" replace />;
   }
@@ -139,11 +161,11 @@ export default function AppShell() {
   return (
     <div className="min-h-dvh bg-background">
       <div className="mx-auto flex min-h-dvh max-w-md flex-col border-x border-border/60 bg-background">
-        <AppHeader user={me.data} pending={pending} newAcc={newAcc} />
+        <AppHeader user={me.data} pending={pending} newAcc={newAcc} newCanc={newCanc} />
         <main className="flex-1 px-4 pb-28 pt-4">
           {me.isLoading ? <div className="h-48 animate-pulse rounded-2xl bg-secondary" /> : <Outlet />}
         </main>
-        <BottomNav pending={pending} newAcc={newAcc} />
+        <BottomNav pending={pending} newAcc={newAcc} newCanc={newCanc} />
       </div>
       <Toaster richColors />
     </div>

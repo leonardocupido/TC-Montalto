@@ -84,6 +84,7 @@ export interface Application {
   message: string;
   status: AppStatus;
   applicant_seen: boolean;
+  cancel_seen: boolean;
   created_at: string;
 }
 
@@ -108,6 +109,13 @@ export interface Summary {
   pending_reviews: number;
   accepted_applications: number;
   new_acceptances: number;
+  new_cancellations: number;
+}
+
+export interface History {
+  last_30_days: number;
+  singoli: number;
+  doppi: number;
 }
 
 export function errorMessage(err: unknown, fallback = "Si è verificato un errore"): string {

@@ -22,15 +22,31 @@ def _check_auth(request: Request) -> None:
 
 
 async def delete_past_matches() -> dict:
-    """Delete matches whose date is before today (Europe/Rome) together with their applications."""
+    """Archive confirmed past matches into played_history, then delete past matches and their applications."""
     today = today_iso("Europe/Rome")
-    ids = [d["id"] for d in await db.matches.find({"date": {"$lt": today}}, {"id": 1}).to_list(10000)]
+    docs = await db.matches.find({"date": {"$lt": today}}, {"_id": 0}).to_list(10000)
+    ids = [d["id"] for d in docs]
     if not ids:
-        return {"matches": 0, "applications": 0}
+        return {"matches": 0, "applications": 0, "archived": 0}
+    archived = 0
+    for d in docs:
+        if d.get("status") != "confermata":
+            continue
+        accepted = await db.applications.find(
+            {"match_id": d["id"], "status": "accettata"}, {"_id": 0, "user_id": 1}
+        ).to_list(10)
+        for uid in [d["owner_id"], *[a["user_id"] for a in accepted]]:
+            # Upsert on (user_id, match_id) keeps a re-run idempotent.
+            await db.played_history.update_one(
+                {"user_id": uid, "match_id": d["id"]},
+                {"$setOnInsert": {"date": d["date"], "type": d["type"], "archived_at": datetime.now(timezone.utc)}},
+                upsert=True,
+            )
+            archived += 1
     apps = await db.applications.delete_many({"match_id": {"$in": ids}})
     res = await db.matches.delete_many({"id": {"$in": ids}})
     logger.info("cleanup-past: deleted %s matches, %s applications", res.deleted_count, apps.deleted_count)
-    return {"matches": res.deleted_count, "applications": apps.deleted_count}
+    return {"matches": res.deleted_count, "applications": apps.deleted_count, "archived": archived}
 
 
 async def _run(run_id: str) -> None:

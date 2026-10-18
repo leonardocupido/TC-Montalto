@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -11,6 +11,7 @@ from models.tennis import (
     Application,
     ApplyIn,
     Contact,
+    History,
     Match,
     MatchIn,
     MyApplication,
@@ -39,6 +40,7 @@ def to_app(doc: dict) -> Application:
         message=doc.get("message", ""),
         status=doc["status"],
         applicant_seen=doc.get("applicant_seen", True),
+        cancel_seen=doc.get("cancel_seen", True),
         created_at=_aware(doc["created_at"]),
     )
 
@@ -119,6 +121,10 @@ async def cancel_match(id: str, user: dict = Depends(current_user)):
     await db.matches.update_one({"id": id}, {"$set": {"status": "annullata"}})
     await db.applications.update_many(
         {"match_id": id, "status": "in_attesa"}, {"$set": {"status": "rifiutata"}}
+    )
+    # Accepted players get an in-app "partita annullata" notice (replacing any unseen acceptance notice).
+    await db.applications.update_many(
+        {"match_id": id, "status": "accettata"}, {"$set": {"cancel_seen": False, "applicant_seen": True}}
     )
     return {"ok": True}
 
@@ -214,7 +220,7 @@ async def my_applications(user: dict = Depends(current_user)):
         if not m:
             continue
         contacts: list[Contact] = []
-        if a["status"] == "accettata":
+        if a["status"] == "accettata" and m.status != "annullata":
             owner = owners.get(m.owner_id, {})
             contacts.append(Contact(name=m.owner_name, phone=owner.get("phone", ""), role="proponente"))
             others = await db.applications.find(
@@ -256,13 +262,49 @@ async def summary(user: dict = Depends(current_user)):
     new_acc = await db.applications.count_documents(
         {"user_id": user["id"], "status": "accettata", "applicant_seen": False}
     )
-    return Summary(pending_reviews=pending, accepted_applications=accepted, new_acceptances=new_acc)
+    cancelled = await db.applications.count_documents({"user_id": user["id"], "cancel_seen": False})
+    return Summary(
+        pending_reviews=pending,
+        accepted_applications=accepted,
+        new_acceptances=new_acc,
+        new_cancellations=cancelled,
+    )
 
 
 @router.post("/me/applications/seen", response_model=Summary)
 async def mark_acceptances_seen(user: dict = Depends(current_user)):
-    """Applicant opened 'Le mie candidature': clear the new-acceptance notification."""
+    """Applicant opened 'Le mie candidature': clear acceptance and cancellation notices."""
     await db.applications.update_many(
         {"user_id": user["id"], "applicant_seen": False}, {"$set": {"applicant_seen": True}}
     )
+    await db.applications.update_many(
+        {"user_id": user["id"], "cancel_seen": False}, {"$set": {"cancel_seen": True}}
+    )
     return await summary(user)
+
+
+@router.get("/me/history", response_model=History)
+async def my_history(user: dict = Depends(current_user)):
+    """Confirmed matches played in the last 30 days — archived ones (played_history) plus not-yet-cleaned ones."""
+    today = date.fromisoformat(today_iso("Europe/Rome"))
+    cutoff = (today - timedelta(days=30)).isoformat()
+    played: dict[str, str] = {}
+    async for h in db.played_history.find(
+        {"user_id": user["id"], "date": {"$gte": cutoff, "$lt": today.isoformat()}}, {"_id": 0}
+    ):
+        played[h["match_id"]] = h["type"]
+    accepted_ids = [
+        a["match_id"]
+        for a in await db.applications.find({"user_id": user["id"], "status": "accettata"}, {"match_id": 1}).to_list(1000)
+    ]
+    async for m in db.matches.find(
+        {
+            "status": "confermata",
+            "date": {"$gte": cutoff, "$lt": today.isoformat()},
+            "$or": [{"owner_id": user["id"]}, {"id": {"$in": accepted_ids}}],
+        },
+        {"_id": 0, "id": 1, "type": 1},
+    ):
+        played[m["id"]] = m["type"]
+    types = list(played.values())
+    return History(last_30_days=len(types), singoli=types.count("singolo"), doppi=types.count("doppio"))

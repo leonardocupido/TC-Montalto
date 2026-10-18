@@ -87,6 +87,7 @@ class Application(BaseModel):
     message: str
     status: AppStatus
     applicant_seen: bool = True
+    cancel_seen: bool = True
     created_at: datetime
 
 
@@ -111,3 +112,10 @@ class Summary(BaseModel):
     pending_reviews: int
     accepted_applications: int
     new_acceptances: int = 0
+    new_cancellations: int = 0
+
+
+class History(BaseModel):
+    last_30_days: int
+    singoli: int
+    doppi: int

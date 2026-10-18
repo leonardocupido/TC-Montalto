@@ -19,7 +19,7 @@ export default function MieCandidature() {
   const data = useQuery({ queryKey: ["my-applications"], queryFn: () => apiGet<MyApplication[]>("/me/applications") });
   const items = data.isError ? [] : (data.data ?? []);
   const qc = useQueryClient();
-  const hasUnseen = items.some((x) => !x.application.applicant_seen);
+  const hasUnseen = items.some((x) => !x.application.applicant_seen || !x.application.cancel_seen);
   // Opening this page acknowledges new acceptances (idempotent, so StrictMode's double effect is harmless).
   const markSeen = useMutation({
     mutationFn: () => apiPost<Summary>("/me/applications/seen"),
@@ -48,11 +48,16 @@ export default function MieCandidature() {
         {items.map(({ application: a, match, contacts }, i) => (
           <section key={a.id} data-testid="my-application-item" className="space-y-2">
             <div className="flex items-center justify-between">
-              <span data-testid="my-application-status" className={cn("rounded-full px-3 py-1 text-xs font-semibold", STATUS[a.status].cls)}>
-                {STATUS[a.status].label}
-              </span>
-              {match.status === "annullata" && <span className="text-xs font-semibold text-[#F87171]">Partita annullata</span>}
-              {!a.applicant_seen && (
+              {match.status === "annullata" ? (
+                <span data-testid="my-application-cancelled" className="rounded-full bg-[#7F1D1D] px-3 py-1 text-xs font-semibold text-[#FECACA]">
+                  Partita annullata dal proponente
+                </span>
+              ) : (
+                <span data-testid="my-application-status" className={cn("rounded-full px-3 py-1 text-xs font-semibold", STATUS[a.status].cls)}>
+                  {STATUS[a.status].label}
+                </span>
+              )}
+              {(!a.applicant_seen || !a.cancel_seen) && (
                 <span data-testid="my-application-new-badge" className="inline-flex items-center gap-1 rounded-full bg-[#EAB308] px-2.5 py-1 text-xs font-bold text-[#0B1118]">
                   <PartyPopper className="size-3.5" /> Nuovo
                 </span>

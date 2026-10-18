@@ -28,6 +28,13 @@ Demo 1-tap login: GET /api/auth/demo-users (empty list if DEMO_LOGIN_ENABLED!=tr
 auth/register, auth/login, auth/logout, auth/me; GET/POST /matches; DELETE /matches/{id}; POST /matches/{id}/apply; POST /applications/{id}/accept|reject; GET /me/matches, /me/applications, /me/summary.
 
 ## Scheduled cleanup
+Before deleting, confirmed past matches are archived into `played_history` {user_id, match_id, date, type} for proponent + accepted players (upsert, idempotent).
+
+## Storico
+GET /api/me/history → {last_30_days, singoli, doppi}: confirmed matches with date in [today-30, today) from played_history + not-yet-cleaned matches. Shown on Bacheca as history-stat card.
+
+## Cancellation notice
+Owner cancel → accepted applications get cancel_seen=false → /api/me/summary.new_cancellations → red header badge (header-cancelled-badge, takes priority over the green one), red count on Candidature tab, error toast. Cleared by POST /api/me/applications/seen (visiting Candidature).
 `.emergent/crons.yml` → `cleanup-past-matches` daily 03:00 Europe/Rome → POST /api/cron/cleanup-past (Bearer WEBHOOK_CRON_SECRET from backend/.env; 401 on bad auth, 400 bad body, 202 ack; idempotent via cron_runs.run_id; deletes in background matches with date < today (Europe/Rome) and their applications).
 
 ## Seed (python seed.py, idempotent)

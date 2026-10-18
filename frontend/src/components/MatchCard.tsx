@@ -6,6 +6,13 @@ import { formatMatchDate, initials } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 export function StatusBadge({ match }: { match: Match }) {
+  if (match.status === "annullata") {
+    return (
+      <span data-testid="match-status-badge" className="inline-flex items-center gap-1 rounded-full bg-[#7F1D1D] px-2.5 py-1 text-xs font-semibold text-[#FECACA]">
+        Annullata
+      </span>
+    );
+  }
   const open = match.status === "aperta";
   return (
     <span

@@ -7,6 +7,7 @@ import type { Match } from "@/lib/types";
 import MatchCard from "@/components/MatchCard";
 import ApplyDialog from "@/components/ApplyDialog";
 import TodayReminder from "@/components/TodayReminder";
+import HistoryStat from "@/components/HistoryStat";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -71,6 +72,7 @@ export default function Bacheca() {
       </section>
 
       <TodayReminder />
+      <HistoryStat />
 
       <div className="-mx-4 mb-4 flex gap-2 overflow-x-auto px-4 pb-1">
         {FILTERS.map((f) => (
