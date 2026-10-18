@@ -7,6 +7,7 @@ FastAPI + MongoDB (backend/routers/auth.py, backend/routers/matches.py, models i
 
 ## Auth
 Email + password, free registration. Session = httpOnly cookie `tc_session` (sessions collection). No admin role.
+Demo 1-tap login: GET /api/auth/demo-users (empty list if DEMO_LOGIN_ENABLED!=true), POST /api/auth/demo-login {email} (404 if disabled or user not demo:true).
 
 ## Data model
 - users {id, name, email, phone, level, password_hash}

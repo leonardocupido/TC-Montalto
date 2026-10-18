@@ -106,9 +106,9 @@ export default function MatchCard({ match, action, index = 0 }: { match: Match; 
               {initials(p.name)}
             </span>
           ))}
-          {Array.from({ length: empty }).map((_, i) => (
+          {Array.from({ length: empty }, (_, n) => `${match.id}-open-slot-${match.players.length + n}`).map((slotId) => (
             <span
-              key={i}
+              key={slotId}
               className="grid size-8 place-items-center rounded-full border-2 border-dashed border-slate-600 bg-[#0B1118] text-[11px] text-slate-500"
             >
               ?

@@ -1,36 +1,42 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { apiPost } from "@/lib/api";
+import { apiGet, apiPost } from "@/lib/api";
 import { beginSession } from "@/lib/session";
-import { errorMessage, type LoginIn, type User } from "@/lib/types";
+import { errorMessage, type DemoLoginIn, type DemoUser, type LoginIn, type User } from "@/lib/types";
 import AuthLayout from "@/components/AuthLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-const DEMO = [
-  { name: "Marco", email: "marco@club.it" },
-  { name: "Matteo", email: "matteo@club.it" },
-  { name: "Giulia", email: "giulia@club.it" },
-  { name: "Lorenzo", email: "lorenzo@club.it" },
-];
-
 export default function Login() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  // Demo accounts come from the backend (gated by DEMO_LOGIN_ENABLED) — no credentials live in the frontend.
+  const demo = useQuery({ queryKey: ["demo-users"], queryFn: () => apiGet<DemoUser[]>("/auth/demo-users") });
+  const demoUsers = demo.isError ? [] : (demo.data ?? []);
+
+  const onLoggedIn = (u: User) => {
+    beginSession();
+    toast.success(`Bentornato, ${u.name.split(" ")[0]}!`);
+    navigate("/");
+  };
 
   const login = useMutation({
     mutationFn: (body: LoginIn) => apiPost<User>("/auth/login", body),
-    onSuccess: (u) => {
-      beginSession();
-      toast.success(`Bentornato, ${u.name.split(" ")[0]}!`);
-      navigate("/");
-    },
+    onSuccess: onLoggedIn,
     onError: (e) => toast.error(errorMessage(e, "Accesso non riuscito")),
   });
+
+  const demoLogin = useMutation({
+    mutationFn: (body: DemoLoginIn) => apiPost<User>("/auth/demo-login", body),
+    onSuccess: onLoggedIn,
+    onError: (e) => toast.error(errorMessage(e, "Accesso demo non riuscito")),
+  });
+
+  const busy = login.isPending || demoLogin.isPending;
 
   return (
     <AuthLayout title="Trova la tua prossima partita." subtitle="La bacheca dei soci per organizzare singoli e doppi, senza chat infinite.">
@@ -49,7 +55,7 @@ export default function Login() {
           <Label htmlFor="password" className="text-xs font-bold uppercase tracking-wider text-slate-400">Password</Label>
           <Input id="password" type="password" required autoComplete="current-password" data-testid="login-password-input" value={password} onChange={(e) => setPassword(e.target.value)} className="h-11" />
         </div>
-        <Button type="submit" data-testid="login-submit-button" disabled={login.isPending} className="h-11 w-full font-semibold active:scale-95">
+        <Button type="submit" data-testid="login-submit-button" disabled={busy} className="h-11 w-full font-semibold active:scale-95">
           {login.isPending ? "Accesso…" : "Accedi"}
         </Button>
       </form>
@@ -59,23 +65,28 @@ export default function Login() {
           Registrati
         </Link>
       </p>
-      <div className="mt-5 border-t border-border pt-4">
-        <p className="text-xs font-bold uppercase tracking-wider text-slate-400">Accesso rapido soci demo</p>
-        <div className="mt-2 flex flex-wrap gap-2">
-          {DEMO.map((d) => (
-            <button
-              key={d.email}
-              type="button"
-              data-testid={`demo-login-${d.name.toLowerCase()}`}
-              disabled={login.isPending}
-              onClick={() => login.mutate({ email: d.email, password: "tennis123" })}
-              className="rounded-full border border-border bg-secondary px-3 py-1.5 text-sm font-medium text-slate-200 transition-[background-color,transform] duration-150 hover:bg-[#223145] active:scale-95"
-            >
-              {d.name}
-            </button>
-          ))}
+      {demoUsers.length > 0 && (
+        <div className="mt-5 border-t border-border pt-4" data-testid="demo-login-section">
+          <p className="text-xs font-bold uppercase tracking-wider text-slate-400">Accesso rapido soci demo</p>
+          <div className="mt-2 flex flex-wrap gap-2">
+            {demoUsers.map((d) => {
+              const first = d.name.split(" ")[0];
+              return (
+                <button
+                  key={d.email}
+                  type="button"
+                  data-testid={`demo-login-${first.toLowerCase()}`}
+                  disabled={busy}
+                  onClick={() => demoLogin.mutate({ email: d.email })}
+                  className="rounded-full border border-border bg-secondary px-3 py-1.5 text-sm font-medium text-slate-200 transition-[background-color,transform] duration-150 hover:bg-[#223145] active:scale-95"
+                >
+                  {first}
+                </button>
+              );
+            })}
+          </div>
         </div>
-      </div>
+      )}
     </AuthLayout>
   );
 }

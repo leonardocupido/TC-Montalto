@@ -21,11 +21,13 @@ async def main():
     for email, name, phone, level in USERS:
         existing = await db.users.find_one({"email": email})
         if existing:
+            await db.users.update_one({"email": email}, {"$set": {"demo": True}})
             ids[email] = existing
             continue
         doc = {
             "id": str(uuid.uuid4()), "name": name, "email": email, "phone": phone, "level": level,
             "password_hash": hash_password("tennis123"), "created_at": datetime.now(timezone.utc),
+            "demo": True,
         }
         await db.users.insert_one(doc)
         ids[email] = doc

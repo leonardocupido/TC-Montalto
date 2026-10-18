@@ -15,6 +15,15 @@ import { cn } from "@/lib/utils";
 const iso = (d: Date) => format(d, "yyyy-MM-dd");
 const LEVEL_HINTS = ["Aperto a tutti", "Principiante", "Intermedio", "Avanzato"];
 const labelCls = "text-xs font-bold uppercase tracking-wider text-slate-400";
+const ACTIVE_TYPE_CLASS: Record<MatchType, string> = {
+  singolo: "border-[#22C55E] bg-[#11221C]",
+  doppio: "border-[#F97316] bg-[#221711]",
+};
+
+function typeCardClass(t: MatchType, active: boolean): string {
+  if (!active) return "border-border bg-secondary";
+  return ACTIVE_TYPE_CLASS[t];
+}
 
 export default function Proponi() {
   const navigate = useNavigate();
@@ -67,9 +76,7 @@ export default function Proponi() {
                   onClick={() => set("type", t)}
                   className={cn(
                     "rounded-2xl border p-4 text-left transition-[border-color,background-color,transform] duration-150 active:scale-[0.98]",
-                    active
-                      ? doppio ? "border-[#F97316] bg-[#221711]" : "border-[#22C55E] bg-[#11221C]"
-                      : "border-border bg-secondary",
+                    typeCardClass(t, active),
                   )}
                 >
                   {doppio ? <Users className="size-5 text-[#FDBA74]" /> : <Trophy className="size-5 text-[#86EFAC]" />}

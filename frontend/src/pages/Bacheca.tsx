@@ -17,6 +17,13 @@ const FILTERS = [
   { id: "doppio", label: "Doppio" },
 ] as const;
 type Filter = (typeof FILTERS)[number]["id"];
+const SKELETONS = ["skeleton-a", "skeleton-b", "skeleton-c"];
+
+function matchesFilter(m: Match, filter: Filter): boolean {
+  if (filter === "tutte") return true;
+  if (filter === "aperte") return m.status === "aperta";
+  return m.type === filter;
+}
 
 const APP_LABEL = { in_attesa: "In attesa", accettata: "Sei in campo!", rifiutata: "Non accettata" } as const;
 
@@ -50,9 +57,7 @@ export default function Bacheca() {
   const [selected, setSelected] = useState<Match | null>(null);
   const matches = useQuery({ queryKey: ["matches"], queryFn: () => apiGet<Match[]>("/matches") });
 
-  const list = (matches.isError ? [] : (matches.data ?? [])).filter((m) =>
-    filter === "tutte" ? true : filter === "aperte" ? m.status === "aperta" : m.type === filter,
-  );
+  const list = (matches.isError ? [] : (matches.data ?? [])).filter((m) => matchesFilter(m, filter));
   const openCount = (matches.data ?? []).filter((m) => m.status === "aperta" && !m.is_owner).length;
 
   return (
@@ -86,7 +91,7 @@ export default function Bacheca() {
 
       <div className="space-y-3" data-testid="matches-list">
         {matches.isLoading &&
-          Array.from({ length: 3 }).map((_, i) => <div key={i} className="h-48 animate-pulse rounded-2xl bg-secondary" />)}
+          SKELETONS.map((id) => <div key={id} className="h-48 animate-pulse rounded-2xl bg-secondary" />)}
         {!matches.isLoading && list.length === 0 && (
           <div data-testid="matches-empty" className="rounded-2xl border border-dashed border-border p-8 text-center">
             <p className="font-heading text-lg font-semibold">Nessuna partita qui</p>

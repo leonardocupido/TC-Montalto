@@ -21,6 +21,15 @@ class LoginIn(BaseModel):
     password: str
 
 
+class DemoUser(BaseModel):
+    name: str
+    email: str
+
+
+class DemoLoginIn(BaseModel):
+    email: str
+
+
 class User(BaseModel):
     id: str
     name: str

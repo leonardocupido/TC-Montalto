@@ -1,0 +1,81 @@
+{
+  "iteration": 1,
+  "passed": 10,
+  "failed": 0,
+  "bugs": [],
+  "action_items": [],
+  "retest_needed": false,
+  "checks": [
+    {
+      "criterion": "Demo quick login no longer has a password in frontend; buttons come from backend",
+      "name": "demo-login-shows-buttons-and-logs-in",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "On /login demo-login-section showed 4 buttons (giulia/lorenzo/marco/matteo); clicking demo-login-giulia logged in and app-header showed 'Tennis Club Montalto'. Re-ran against public preview URL https://bacheca-tennis.preview.emergentagent.com - passed."
+    },
+    {
+      "criterion": "Demo quick login no longer has a password in frontend; buttons come from backend (API)",
+      "name": "test_tscheck_demo_login.py",
+      "lane": "backend",
+      "status": "passed",
+      "evidence": "GET /api/auth/demo-users -> 200 with exactly the 4 demo emails; POST /api/auth/demo-login {email: giulia@club.it} -> 200; POST /api/auth/demo-login {email: tscheck-nobody-xq1@club.it} -> 404"
+    },
+    {
+      "criterion": "Email+password login still works",
+      "name": "email-password-login-flow",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "login-email-input=marco@club.it + wrong password -> POST /api/auth/login returned 401, sonner error toast shown, stayed on /login. Then correct password tennis123 -> app-header visible (landed on bacheca)."
+    },
+    {
+      "criterion": "Password verification refactor (partition) works",
+      "name": "test_tscheck_password_auth.py",
+      "lane": "backend",
+      "status": "passed",
+      "evidence": "POST /api/auth/login correct pw -> 200; wrong pw -> 401; POST /api/auth/register (tscheck-reg-*) -> 200, logout, login with same creds -> 200, wrong pw on new user -> 401"
+    },
+    {
+      "criterion": "Bacheca filters (refactored, no nested ternary)",
+      "name": "bacheca-filters-work",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "filter-tutte shows all match-card-item; filter-aperte: every visible card's match-status-badge contained 'Aperta'; filter-singolo: every match-type-pill said 'Singolo'; filter-doppio: every match-type-pill said 'Doppio'"
+    },
+    {
+      "criterion": "Open slot placeholders on match cards render correctly",
+      "name": "match-roster-shows-open-slot-placeholders",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "Doppio fixture (1 filled player, spots_total=3) showed 1 filled avatar + 3 '?' placeholders in match-roster; singolo confermata fixture (2 players, 0 spots) showed 2 avatars and 0 '?' placeholders"
+    },
+    {
+      "criterion": "Propose form type cards (refactored class helper)",
+      "name": "propose-type-card-highlight-and-create",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "Clicking propose-type-doppio added class border-[#F97316] (orange active border); filling level + submitting -> POST /api/matches 200, navigated to /le-mie-partite, new match visible by its unique level label"
+    },
+    {
+      "criterion": "Le mie partite refactor: accept/reject/cancel still work",
+      "name": "mie-partite-accept-reject-cancel-flow",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "Lorenzo proposed a fresh singolo; Giulia applied; Lorenzo's header-pending-badge and nav-pending-count appeared; accept-candidate-btn click -> POST /applications/{id}/accept 200, candidate-status became 'Accettata', match-status-badge became 'Confermata'. Separately created+cancelled another fresh match via cancel-match-btn (confirm dialog auto-accepted) -> DELETE /api/matches/{id} 200, section removed from list"
+    },
+    {
+      "criterion": "Le mie partite refactor: accept/reject/cancel still work (API)",
+      "name": "test_tscheck_apply_accept_flow.py",
+      "lane": "backend",
+      "status": "passed",
+      "evidence": "POST /matches (owner=marco) -> 200 status aperta; POST /matches/{id}/apply (applicant=giulia) -> 200; POST /applications/{id}/accept -> 200; GET /matches listing confirms match status became 'confermata'"
+    },
+    {
+      "criterion": "Full apply flow end-to-end",
+      "name": "full-apply-flow-end-to-end",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "Matteo proposed singolo; Lorenzo applied via apply-match-button + candidacy-phone-input + candidacy-modal-submit -> card showed 'In attesa'; Matteo accepted via accept-candidate-btn -> candidate-status 'Accettata'; Lorenzo's /le-mie-candidature showed my-application-status 'Accettata · Sei in campo!' plus my-application-contacts with phone numbers"
+    }
+  ],
+  "notes": "10 criteria covered by 7 browser checks + 3 backend test files (one backend file bundles the demo-login happy+404 paths, one bundles login/register password paths, one covers the apply->accept API flow). All checks created their own tscheck-* fixture rows; no seeded data was mutated. Backend suite: 7 passed (python -m pytest /app/backend/tests). Browser checks: 7/7 passed, re-ran demo-login check against the public preview URL as required."
+}
