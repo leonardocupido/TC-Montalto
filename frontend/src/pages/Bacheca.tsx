@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
-import { Plus } from "lucide-react";
+import { useIsFetching, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Plus, RefreshCw } from "lucide-react";
 import { apiGet } from "@/lib/api";
 import type { Match } from "@/lib/types";
 import MatchCard from "@/components/MatchCard";
@@ -60,15 +60,33 @@ export default function Bacheca() {
 
   const list = (matches.isError ? [] : (matches.data ?? [])).filter((m) => matchesFilter(m, filter));
   const openCount = (matches.data ?? []).filter((m) => m.status === "aperta" && !m.is_owner).length;
+  const qc = useQueryClient();
+  const refreshing = useIsFetching() > 0;
+  const refresh = () => {
+    for (const k of ["matches", "today", "history", "summary"]) void qc.invalidateQueries({ queryKey: [k] });
+  };
 
   return (
     <div>
-      <section className="mb-5">
-        <p className="text-xs font-bold uppercase tracking-wider text-[#EA580C]">Bacheca soci</p>
-        <h1 className="mt-1 font-heading text-3xl font-semibold tracking-tight">Partite in programma</h1>
-        <p data-testid="open-matches-count" className="mt-1 text-sm text-slate-400">
-          {matches.isLoading ? "Caricamento…" : `${openCount} partite cercano giocatori`}
-        </p>
+      <section className="mb-5 flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-xs font-bold uppercase tracking-wider text-[#EA580C]">Bacheca soci</p>
+          <h1 className="mt-1 font-heading text-3xl font-semibold tracking-tight">Partite in programma</h1>
+          <p data-testid="open-matches-count" className="mt-1 text-sm text-slate-400">
+            {matches.isLoading ? "Caricamento…" : `${openCount} partite cercano giocatori`}
+          </p>
+        </div>
+        <Button
+          variant="outline"
+          size="icon-lg"
+          aria-label="Aggiorna bacheca"
+          data-testid="refresh-board-button"
+          disabled={refreshing}
+          onClick={refresh}
+          className="mt-1 shrink-0 rounded-full active:scale-95"
+        >
+          <RefreshCw className={cn("size-5", refreshing && "animate-spin")} />
+        </Button>
       </section>
 
       <TodayReminder />

@@ -13,15 +13,6 @@ export interface User {
   level: string;
 }
 
-export interface DemoUser {
-  name: string;
-  email: string;
-}
-
-export interface DemoLoginIn {
-  email: string;
-}
-
 export interface RegisterIn {
   name: string;
   email: string;
