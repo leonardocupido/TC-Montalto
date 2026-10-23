@@ -46,6 +46,9 @@ Bottom nav 4th tab is now "Soci" (/soci) — replaced the "Proponi" tab (proposi
 - Notifications: the other participant is flagged unseen on accept/reject/schedule → summary.challenge_updates → Soci tab count + toast.
 - Nightly cleanup also deletes challenges with date < today.
 
+## Profilo
+On own member page (/soci/<my id>, is_me) "Modifica profilo" button (edit-profile-button) → dialog with name, email, phone, level → PATCH /api/auth/me (400: invalid email, email used by another member, name < 2). Propagates name/level to matches.owner_*, applications.user_*, challenges challenger_*/challenged_name. Password not editable here.
+
 ## Storico
 GET /api/me/history → {last_30_days, singoli, doppi}: confirmed matches with date in [today-30, today) from played_history + not-yet-cleaned matches. Shown on Bacheca as history-stat card.
 

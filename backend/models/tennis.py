@@ -16,6 +16,13 @@ class RegisterIn(BaseModel):
     level: str = Field(default="", max_length=60)
 
 
+class ProfileUpdate(BaseModel):
+    name: str = Field(min_length=2, max_length=60)
+    email: str = Field(min_length=3, max_length=120)
+    phone: str = Field(default="", max_length=30)
+    level: str = Field(default="", max_length=60)
+
+
 class LoginIn(BaseModel):
     email: str
     password: str

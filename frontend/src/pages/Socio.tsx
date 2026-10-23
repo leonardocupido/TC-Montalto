@@ -3,12 +3,13 @@ import { Link, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { format, parseISO } from "date-fns";
 import { it } from "date-fns/locale";
-import { ArrowLeft, Mail, Phone, Swords } from "lucide-react";
+import { ArrowLeft, Mail, Pencil, Phone, Swords } from "lucide-react";
 import { apiGet } from "@/lib/api";
 import type { MemberDetail } from "@/lib/types";
 import { initials, telHref } from "@/lib/format";
 import MatchCard from "@/components/MatchCard";
 import ChallengeDialog from "@/components/ChallengeDialog";
+import EditProfileDialog from "@/components/EditProfileDialog";
 import { Button } from "@/components/ui/button";
 
 function StatTile({ label, value, testid, accent }: { label: string; value: number; testid: string; accent?: boolean }) {
@@ -27,6 +28,7 @@ export default function Socio() {
   const member = useQuery({ queryKey: ["member", id], queryFn: () => apiGet<MemberDetail>(`/members/${id}`) });
   const m = member.isError ? undefined : member.data;
   const [challengeOpen, setChallengeOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
 
   return (
     <div>
@@ -59,6 +61,19 @@ export default function Socio() {
             </div>
           </section>
 
+          {m.is_me && (
+            <>
+              <Button
+                variant="outline"
+                data-testid="edit-profile-button"
+                onClick={() => setEditOpen(true)}
+                className="mt-4 h-11 w-full font-semibold active:scale-95"
+              >
+                <Pencil className="size-4" /> Modifica profilo
+              </Button>
+              <EditProfileDialog member={m} open={editOpen} onOpenChange={setEditOpen} />
+            </>
+          )}
           {!m.is_me && (
             <Button
               data-testid="challenge-member-button"

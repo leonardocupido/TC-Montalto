@@ -30,6 +30,13 @@ export interface RegisterIn {
   level: string;
 }
 
+export interface ProfileUpdate {
+  name: string;
+  email: string;
+  phone: string;
+  level: string;
+}
+
 export interface LoginIn {
   email: string;
   password: string;
