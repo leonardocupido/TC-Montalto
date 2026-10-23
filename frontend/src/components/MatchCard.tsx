@@ -5,6 +5,17 @@ import type { Match } from "@/lib/types";
 import { formatMatchDate, initials } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
+// Singolo: player 1 vs player 2. Doppio: first two players (proponente + first accepted) vs the other two.
+const TEAM_COLORS = [
+  { avatar: "bg-[#FACC15] text-[#0B1118]", dot: "bg-[#FACC15]", label: "text-[#FDE047]" },
+  { avatar: "bg-[#3B82F6] text-white", dot: "bg-[#3B82F6]", label: "text-[#93C5FD]" },
+] as const;
+
+function teamOf(index: number, type: Match["type"]): 0 | 1 {
+  const perTeam = type === "doppio" ? 2 : 1;
+  return index < perTeam ? 0 : 1;
+}
+
 export function StatusBadge({ match }: { match: Match }) {
   if (match.status === "annullata") {
     return (
@@ -104,11 +115,16 @@ export default function MatchCard({ match, action, index = 0 }: { match: Match; 
 
       <div className="mt-3 flex items-center justify-between gap-3">
         <div className="flex -space-x-2" data-testid="match-roster">
-          {match.players.map((p) => (
+          {match.players.map((p, idx) => (
             <span
               key={p.user_id}
               title={p.name}
-              className="grid size-8 place-items-center rounded-full border-2 border-[#0B1118] bg-[#10B981] text-[11px] font-bold text-[#022C22]"
+              data-testid="roster-avatar"
+              data-team={teamOf(idx, match.type)}
+              className={cn(
+                "grid size-8 place-items-center rounded-full border-2 border-[#0B1118] text-[11px] font-bold",
+                TEAM_COLORS[teamOf(idx, match.type)].avatar,
+              )}
             >
               {initials(p.name)}
             </span>
@@ -124,6 +140,26 @@ export default function MatchCard({ match, action, index = 0 }: { match: Match; 
         </div>
         {action}
       </div>
+
+      {match.players.length > 1 && (
+        <ul data-testid="match-participants" className="mt-3 grid gap-1.5 rounded-xl bg-black/20 px-3 py-2">
+          {match.players.map((p, idx) => {
+            const team = teamOf(idx, match.type);
+            return (
+              <li key={p.user_id} data-testid="participant-name" className="flex items-center gap-2 text-sm text-white">
+                <span className={cn("size-2.5 shrink-0 rounded-full", TEAM_COLORS[team].dot)} />
+                <span className="truncate font-medium">{p.name}</span>
+                {idx === 0 && <span className="text-xs text-slate-400">· proponente</span>}
+                {doppio && idx % 2 === 0 && (
+                  <span className={cn("ml-auto text-[10px] font-bold uppercase tracking-wider", TEAM_COLORS[team].label)}>
+                    Coppia {team === 0 ? "A" : "B"}
+                  </span>
+                )}
+              </li>
+            );
+          })}
+        </ul>
+      )}
     </motion.article>
   );
 }

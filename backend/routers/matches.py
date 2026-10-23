@@ -47,7 +47,7 @@ def to_app(doc: dict) -> Application:
 
 async def build_matches(docs: list[dict], user_id: str) -> list[Match]:
     ids = [d["id"] for d in docs]
-    apps = await db.applications.find({"match_id": {"$in": ids}}, {"_id": 0}).to_list(5000)
+    apps = await db.applications.find({"match_id": {"$in": ids}}, {"_id": 0}).sort("created_at", 1).to_list(5000)
     out: list[Match] = []
     for d in docs:
         m_apps = [a for a in apps if a["match_id"] == d["id"]]
