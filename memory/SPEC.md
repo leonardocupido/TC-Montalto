@@ -36,6 +36,15 @@ Bottom nav 4th tab is now "Soci" (/soci) — replaced the "Proponi" tab (proposi
 - GET /api/members/{id} → {id, name, email, phone, level, member_since, is_me, stats{played_total, played_30d, singoli, doppi, proposed_total}, upcoming: Match[]}; 404 if unknown. Page /soci/:id. Visible to every logged-in member (club-internal directory).
 - played counts = confirmed matches before today (played_history archive + not-yet-cleaned confirmed matches); proposed_total = live non-cancelled proposals + archived owner entries (played_history.owner).
 
+## Sfide (challenges)
+- Member detail (/soci/:id, not self) has "Sfida <nome>" button (challenge-member-button) → dialog (date, time, message) → POST /api/members/{id}/challenge. 400: self, past date, already a pending challenge to same member; 404 unknown member.
+- Collection challenges {id, challenger_*, challenged_*, date, time, message, status in_attesa|accettata|rifiutata, match_id, seen_by_challenged, result_seen}.
+- Challenged gets notice: /api/me/summary.pending_challenges (pending, date>=today) → orange header badge "Sfidato!" (header-challenge-badge, highest priority), orange count on Soci tab (nav-soci-count), toast with "Apri" → /sfide.
+- /sfide page (also linked from Soci page "Le mie sfide"): received (from whom, date/time/message, Accetta/Rifiuta) + sent with status. GET /api/challenges → {received, sent}. Visiting calls POST /api/challenges/seen.
+- POST /api/challenges/{id}/accept (challenged only; 400 if handled/expired) → creates a confermata singolo match (owner=challenger, level "Sfida") + accepted application for challenged; it shows on Bacheca, today reminder, stats. POST /api/challenges/{id}/reject.
+- Challenger notified of answer: summary.challenge_updates → Soci tab count + toast.
+- Nightly cleanup also deletes challenges with date < today.
+
 ## Storico
 GET /api/me/history → {last_30_days, singoli, doppi}: confirmed matches with date in [today-30, today) from played_history + not-yet-cleaned matches. Shown on Bacheca as history-stat card.
 

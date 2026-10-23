@@ -2,9 +2,10 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "motion/react";
-import { ChevronRight, Search } from "lucide-react";
+import { ChevronRight, Search, Swords } from "lucide-react";
 import { apiGet } from "@/lib/api";
 import type { MemberSummary } from "@/lib/types";
+import { useSummary } from "@/lib/hooks";
 import { initials } from "@/lib/format";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -16,6 +17,7 @@ export default function Soci() {
   const members = useQuery({ queryKey: ["members"], queryFn: () => apiGet<MemberSummary[]>("/members") });
   const all = members.isError ? [] : (members.data ?? []);
   const list = all.filter((m) => m.name.toLowerCase().includes(q.trim().toLowerCase()));
+  const pendingCh = useSummary(true).data?.pending_challenges ?? 0;
 
   return (
     <div>
@@ -24,6 +26,21 @@ export default function Soci() {
       <p data-testid="members-count" className="mt-1 text-sm text-slate-400">
         {members.isLoading ? "Caricamento…" : `${all.length} ${all.length === 1 ? "socio" : "soci"} in bacheca`}
       </p>
+
+      <Link
+        to="/sfide"
+        data-testid="challenges-link"
+        className="mt-4 flex items-center gap-3 rounded-2xl border border-[#9A3412]/70 bg-[#221711] px-4 py-3 transition-[border-color,transform] duration-150 hover:border-[#EA580C] active:scale-[0.99]"
+      >
+        <Swords className="size-5 text-[#FDBA74]" />
+        <span className="flex-1 font-semibold text-white">Le mie sfide</span>
+        {pendingCh > 0 && (
+          <span data-testid="challenges-link-count" className="rounded-full bg-[#EA580C] px-2 py-0.5 text-xs font-bold text-white">
+            {pendingCh} da rispondere
+          </span>
+        )}
+        <ChevronRight className="size-4 text-slate-500" />
+      </Link>
 
       <div className="relative mt-4">
         <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-500" />

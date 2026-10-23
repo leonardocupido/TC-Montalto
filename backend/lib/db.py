@@ -24,6 +24,11 @@ INDEXES: dict[str, list[IndexModel]] = {
         IndexModel([("email", ASCENDING)], name="email", unique=True),
     ],
     "sessions": [IndexModel([("token", ASCENDING)], name="token", unique=True)],
+    "challenges": [
+        IndexModel([("id", ASCENDING)], name="id", unique=True),
+        IndexModel([("challenged_id", ASCENDING), ("status", ASCENDING), ("date", ASCENDING)], name="challenged_status"),
+        IndexModel([("challenger_id", ASCENDING), ("created_at", DESCENDING)], name="challenger_created"),
+    ],
     "cron_runs": [IndexModel([("run_id", ASCENDING)], name="run_id", unique=True)],
     "played_history": [
         IndexModel([("user_id", ASCENDING), ("match_id", ASCENDING)], name="user_match", unique=True),

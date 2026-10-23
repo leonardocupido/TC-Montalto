@@ -24,6 +24,7 @@ def _check_auth(request: Request) -> None:
 async def delete_past_matches() -> dict:
     """Archive confirmed past matches into played_history, then delete past matches and their applications."""
     today = today_iso("Europe/Rome")
+    await db.challenges.delete_many({"date": {"$lt": today}})
     docs = await db.matches.find({"date": {"$lt": today}}, {"_id": 0}).to_list(10000)
     ids = [d["id"] for d in docs]
     if not ids:

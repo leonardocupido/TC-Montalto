@@ -110,6 +110,38 @@ export interface Summary {
   accepted_applications: number;
   new_acceptances: number;
   new_cancellations: number;
+  pending_challenges: number;
+  challenge_updates: number;
+}
+
+export type ChallengeStatus = "in_attesa" | "accettata" | "rifiutata";
+
+export interface ChallengeIn {
+  date: string;
+  time: string;
+  message: string;
+}
+
+export interface Challenge {
+  id: string;
+  challenger_id: string;
+  challenger_name: string;
+  challenger_level: string;
+  challenged_id: string;
+  challenged_name: string;
+  date: string;
+  time: string;
+  message: string;
+  status: ChallengeStatus;
+  expired: boolean;
+  match_id: string | null;
+  unseen: boolean;
+  created_at: string;
+}
+
+export interface ChallengeList {
+  received: Challenge[];
+  sent: Challenge[];
 }
 
 export interface History {

@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { NavLink, Navigate, Outlet } from "react-router-dom";
+import { NavLink, Navigate, Outlet, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { CalendarCheck, Handshake, LayoutList, LogOut, UsersRound } from "lucide-react";
 import { ApiError } from "@/lib/api";
@@ -24,7 +24,7 @@ function navLinkClass({ isActive }: { isActive: boolean }) {
   );
 }
 
-function AppHeader({ user, pending, newAcc, newCanc }: { user: User | undefined; pending: number; newAcc: number; newCanc: number }) {
+function AppHeader({ user, pending, newAcc, newCanc, challenges }: { user: User | undefined; pending: number; newAcc: number; newCanc: number; challenges: number }) {
   return (
     <header
       data-testid="app-header"
@@ -38,7 +38,16 @@ function AppHeader({ user, pending, newAcc, newCanc }: { user: User | undefined;
         </div>
       </div>
       <div className="flex shrink-0 items-center gap-2">
-        {newCanc > 0 && (
+        {challenges > 0 && (
+          <NavLink
+            to="/sfide"
+            data-testid="header-challenge-badge"
+            className="animate-pulse-ring whitespace-nowrap rounded-full bg-[#EA580C] px-2.5 py-1 text-xs font-bold text-white"
+          >
+            {challenges === 1 ? "Sfidato!" : `${challenges} sfide`}
+          </NavLink>
+        )}
+        {challenges === 0 && newCanc > 0 && (
           <NavLink
             to="/le-mie-candidature"
             data-testid="header-cancelled-badge"
@@ -47,7 +56,7 @@ function AppHeader({ user, pending, newAcc, newCanc }: { user: User | undefined;
             {newCanc === 1 ? "Annullata" : `${newCanc} annullate`}
           </NavLink>
         )}
-        {newCanc === 0 && newAcc > 0 && (
+        {challenges === 0 && newCanc === 0 && newAcc > 0 && (
           <NavLink
             to="/le-mie-candidature"
             data-testid="header-accepted-badge"
@@ -86,7 +95,7 @@ function AppHeader({ user, pending, newAcc, newCanc }: { user: User | undefined;
   );
 }
 
-function BottomNav({ pending, newAcc, newCanc }: { pending: number; newAcc: number; newCanc: number }) {
+function BottomNav({ pending, newAcc, newCanc, soci }: { pending: number; newAcc: number; newCanc: number; soci: number }) {
   return (
     <nav
       data-testid="bottom-nav"
@@ -117,6 +126,14 @@ function BottomNav({ pending, newAcc, newCanc }: { pending: number; newAcc: numb
                     {newAcc + newCanc}
                   </span>
                 )}
+                {to === "/soci" && soci > 0 && (
+                  <span
+                    data-testid="nav-soci-count"
+                    className="absolute -right-2.5 -top-1.5 grid size-4 place-items-center rounded-full bg-[#EA580C] text-[10px] font-bold text-white"
+                  >
+                    {soci}
+                  </span>
+                )}
               </span>
               {label}
             </NavLink>
@@ -134,6 +151,30 @@ export default function AppShell() {
   const pending = summary.data?.pending_reviews ?? 0;
   const newAcc = summary.data?.new_acceptances ?? 0;
   const newCanc = summary.data?.new_cancellations ?? 0;
+  const pendingCh = summary.data?.pending_challenges ?? 0;
+  const chUpdates = summary.data?.challenge_updates ?? 0;
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (pendingCh > 0) {
+      toast(pendingCh === 1 ? "⚔️ Sei stato sfidato!" : `⚔️ Hai ${pendingCh} sfide da accettare`, {
+        id: "pending-challenges",
+        description: "Apri la notifica per vedere chi ti sfida e rispondere.",
+        action: { label: "Apri", onClick: () => navigate("/sfide") },
+      });
+    } else {
+      toast.dismiss("pending-challenges");
+    }
+  }, [pendingCh, navigate]);
+
+  useEffect(() => {
+    if (chUpdates > 0) {
+      toast("Hai una risposta alla tua sfida", {
+        id: "challenge-updates",
+        action: { label: "Vedi", onClick: () => navigate("/sfide") },
+      });
+    }
+  }, [chUpdates, navigate]);
 
   useEffect(() => {
     if (newAcc > 0) {
@@ -161,11 +202,11 @@ export default function AppShell() {
   return (
     <div className="min-h-dvh bg-background">
       <div className="mx-auto flex min-h-dvh max-w-md flex-col border-x border-border/60 bg-background">
-        <AppHeader user={me.data} pending={pending} newAcc={newAcc} newCanc={newCanc} />
+        <AppHeader user={me.data} pending={pending} newAcc={newAcc} newCanc={newCanc} challenges={pendingCh} />
         <main className="flex-1 px-4 pb-28 pt-4">
           {me.isLoading ? <div className="h-48 animate-pulse rounded-2xl bg-secondary" /> : <Outlet />}
         </main>
-        <BottomNav pending={pending} newAcc={newAcc} newCanc={newCanc} />
+        <BottomNav pending={pending} newAcc={newAcc} newCanc={newCanc} soci={pendingCh + chUpdates} />
       </div>
       <Toaster richColors />
     </div>

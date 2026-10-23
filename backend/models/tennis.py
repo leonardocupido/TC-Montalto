@@ -113,6 +113,39 @@ class Summary(BaseModel):
     accepted_applications: int
     new_acceptances: int = 0
     new_cancellations: int = 0
+    pending_challenges: int = 0
+    challenge_updates: int = 0
+
+
+ChallengeStatus = Literal["in_attesa", "accettata", "rifiutata"]
+
+
+class ChallengeIn(BaseModel):
+    date: str = Field(pattern=r"^\d{4}-\d{2}-\d{2}$")
+    time: str = Field(pattern=r"^\d{2}:\d{2}$")
+    message: str = Field(default="", max_length=300)
+
+
+class Challenge(BaseModel):
+    id: str
+    challenger_id: str
+    challenger_name: str
+    challenger_level: str
+    challenged_id: str
+    challenged_name: str
+    date: str
+    time: str
+    message: str
+    status: ChallengeStatus
+    expired: bool
+    match_id: Optional[str] = None
+    unseen: bool
+    created_at: datetime
+
+
+class ChallengeList(BaseModel):
+    received: list[Challenge]
+    sent: list[Challenge]
 
 
 class History(BaseModel):

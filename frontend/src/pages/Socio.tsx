@@ -1,12 +1,15 @@
+import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { format, parseISO } from "date-fns";
 import { it } from "date-fns/locale";
-import { ArrowLeft, Mail, Phone } from "lucide-react";
+import { ArrowLeft, Mail, Phone, Swords } from "lucide-react";
 import { apiGet } from "@/lib/api";
 import type { MemberDetail } from "@/lib/types";
 import { initials, telHref } from "@/lib/format";
 import MatchCard from "@/components/MatchCard";
+import ChallengeDialog from "@/components/ChallengeDialog";
+import { Button } from "@/components/ui/button";
 
 function StatTile({ label, value, testid, accent }: { label: string; value: number; testid: string; accent?: boolean }) {
   return (
@@ -23,6 +26,7 @@ export default function Socio() {
   const { id = "" } = useParams();
   const member = useQuery({ queryKey: ["member", id], queryFn: () => apiGet<MemberDetail>(`/members/${id}`) });
   const m = member.isError ? undefined : member.data;
+  const [challengeOpen, setChallengeOpen] = useState(false);
 
   return (
     <div>
@@ -54,6 +58,19 @@ export default function Socio() {
               )}
             </div>
           </section>
+
+          {!m.is_me && (
+            <Button
+              data-testid="challenge-member-button"
+              onClick={() => setChallengeOpen(true)}
+              className="mt-4 h-12 w-full bg-[#EA580C] text-base font-semibold text-white hover:bg-[#C2410C] active:scale-95"
+            >
+              <Swords className="size-5" /> Sfida {m.name.split(" ")[0]}
+            </Button>
+          )}
+          {!m.is_me && (
+            <ChallengeDialog memberId={m.id} memberName={m.name} open={challengeOpen} onOpenChange={setChallengeOpen} />
+          )}
 
           <div className="mt-4 space-y-2 rounded-2xl border border-border bg-card p-3" data-testid="member-contacts">
             {m.phone ? (
