@@ -119,3 +119,31 @@ class History(BaseModel):
     last_30_days: int
     singoli: int
     doppi: int
+
+
+class MemberSummary(BaseModel):
+    id: str
+    name: str
+    level: str
+    is_me: bool
+    played_30d: int
+
+
+class MemberStats(BaseModel):
+    played_total: int
+    played_30d: int
+    singoli: int
+    doppi: int
+    proposed_total: int
+
+
+class MemberDetail(BaseModel):
+    id: str
+    name: str
+    email: str
+    phone: str
+    level: str
+    member_since: Optional[datetime] = None
+    is_me: bool
+    stats: MemberStats
+    upcoming: list[Match]

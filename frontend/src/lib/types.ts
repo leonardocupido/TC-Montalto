@@ -118,6 +118,34 @@ export interface History {
   doppi: number;
 }
 
+export interface MemberSummary {
+  id: string;
+  name: string;
+  level: string;
+  is_me: boolean;
+  played_30d: number;
+}
+
+export interface MemberStats {
+  played_total: number;
+  played_30d: number;
+  singoli: number;
+  doppi: number;
+  proposed_total: number;
+}
+
+export interface MemberDetail {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  level: string;
+  member_since: string | null;
+  is_me: boolean;
+  stats: MemberStats;
+  upcoming: Match[];
+}
+
 export function errorMessage(err: unknown, fallback = "Si è verificato un errore"): string {
   if (err instanceof ApiError) {
     const body = err.body as { detail?: unknown } | null;

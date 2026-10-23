@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { NavLink, Navigate, Outlet } from "react-router-dom";
 import { toast } from "sonner";
-import { CalendarCheck, Handshake, LayoutList, LogOut, PlusCircle } from "lucide-react";
+import { CalendarCheck, Handshake, LayoutList, LogOut, UsersRound } from "lucide-react";
 import { ApiError } from "@/lib/api";
 import { useMe, useSummary } from "@/lib/hooks";
 import { endSession } from "@/lib/session";
@@ -14,7 +14,7 @@ const NAV = [
   { to: "/", label: "Bacheca", icon: LayoutList, testid: "nav-bacheca-tab" },
   { to: "/le-mie-partite", label: "Mie partite", icon: CalendarCheck, testid: "nav-mie-partite-tab" },
   { to: "/le-mie-candidature", label: "Candidature", icon: Handshake, testid: "nav-mie-candidature-tab" },
-  { to: "/proponi", label: "Proponi", icon: PlusCircle, testid: "nav-proponi-tab" },
+  { to: "/soci", label: "Soci", icon: UsersRound, testid: "nav-soci-tab" },
 ];
 
 function navLinkClass({ isActive }: { isActive: boolean }) {
@@ -95,9 +95,9 @@ function BottomNav({ pending, newAcc, newCanc }: { pending: number; newAcc: numb
       <ul className="grid grid-cols-4">
         {NAV.map(({ to, label, icon: Icon, testid }) => (
           <li key={to}>
-            <NavLink to={to} end data-testid={testid} className={navLinkClass}>
+            <NavLink to={to} end={to === "/"} data-testid={testid} className={navLinkClass}>
               <span className="relative">
-                <Icon className={cn("size-5", to === "/proponi" && "size-6")} />
+                <Icon className="size-5" />
                 {to === "/le-mie-partite" && pending > 0 && (
                   <span
                     data-testid="nav-pending-count"

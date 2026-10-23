@@ -39,7 +39,7 @@ async def delete_past_matches() -> dict:
             # Upsert on (user_id, match_id) keeps a re-run idempotent.
             await db.played_history.update_one(
                 {"user_id": uid, "match_id": d["id"]},
-                {"$setOnInsert": {"date": d["date"], "type": d["type"], "archived_at": datetime.now(timezone.utc)}},
+                {"$setOnInsert": {"date": d["date"], "type": d["type"], "owner": uid == d["owner_id"], "archived_at": datetime.now(timezone.utc)}},
                 upsert=True,
             )
             archived += 1

@@ -30,6 +30,12 @@ auth/register, auth/login, auth/logout, auth/me; GET/POST /matches; DELETE /matc
 ## Scheduled cleanup
 Before deleting, confirmed past matches are archived into `played_history` {user_id, match_id, date, type} for proponent + accepted players (upsert, idempotent).
 
+## Soci (members)
+Bottom nav 4th tab is now "Soci" (/soci) — replaced the "Proponi" tab (proposing stays reachable via the orange + FAB on Bacheca and empty-state links; /proponi route unchanged).
+- GET /api/members → [{id, name, level, is_me, played_30d}] me first then alphabetical. Page /soci with search (members-search-input), items member-item.
+- GET /api/members/{id} → {id, name, email, phone, level, member_since, is_me, stats{played_total, played_30d, singoli, doppi, proposed_total}, upcoming: Match[]}; 404 if unknown. Page /soci/:id. Visible to every logged-in member (club-internal directory).
+- played counts = confirmed matches before today (played_history archive + not-yet-cleaned confirmed matches); proposed_total = live non-cancelled proposals + archived owner entries (played_history.owner).
+
 ## Storico
 GET /api/me/history → {last_30_days, singoli, doppi}: confirmed matches with date in [today-30, today) from played_history + not-yet-cleaned matches. Shown on Bacheca as history-stat card.
 

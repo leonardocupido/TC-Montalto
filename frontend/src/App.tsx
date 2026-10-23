@@ -6,6 +6,8 @@ import Bacheca from "@/pages/Bacheca";
 import Proponi from "@/pages/Proponi";
 import MiePartite from "@/pages/MiePartite";
 import MieCandidature from "@/pages/MieCandidature";
+import Soci from "@/pages/Soci";
+import Socio from "@/pages/Socio";
 
 // One <Route> per page in src/pages; BrowserRouter already wraps this in main.tsx.
 export default function App() {
@@ -18,6 +20,8 @@ export default function App() {
         <Route path="/proponi" element={<Proponi />} />
         <Route path="/le-mie-partite" element={<MiePartite />} />
         <Route path="/le-mie-candidature" element={<MieCandidature />} />
+        <Route path="/soci" element={<Soci />} />
+        <Route path="/soci/:id" element={<Socio />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

@@ -283,28 +283,34 @@ async def mark_acceptances_seen(user: dict = Depends(current_user)):
     return await summary(user)
 
 
-@router.get("/me/history", response_model=History)
-async def my_history(user: dict = Depends(current_user)):
-    """Confirmed matches played in the last 30 days — archived ones (played_history) plus not-yet-cleaned ones."""
-    today = date.fromisoformat(today_iso("Europe/Rome"))
-    cutoff = (today - timedelta(days=30)).isoformat()
+async def played_matches(user_id: str, since: Optional[str] = None) -> dict[str, str]:
+    """match_id -> type of confirmed matches played before today (optionally from `since`):
+    archived ones (played_history) plus confirmed past matches not yet cleaned up."""
+    today = today_iso("Europe/Rome")
+    date_q: dict = {"$lt": today}
+    if since:
+        date_q["$gte"] = since
     played: dict[str, str] = {}
-    async for h in db.played_history.find(
-        {"user_id": user["id"], "date": {"$gte": cutoff, "$lt": today.isoformat()}}, {"_id": 0}
-    ):
+    async for h in db.played_history.find({"user_id": user_id, "date": date_q}, {"_id": 0}):
         played[h["match_id"]] = h["type"]
     accepted_ids = [
         a["match_id"]
-        for a in await db.applications.find({"user_id": user["id"], "status": "accettata"}, {"match_id": 1}).to_list(1000)
+        for a in await db.applications.find({"user_id": user_id, "status": "accettata"}, {"match_id": 1}).to_list(1000)
     ]
     async for m in db.matches.find(
-        {
-            "status": "confermata",
-            "date": {"$gte": cutoff, "$lt": today.isoformat()},
-            "$or": [{"owner_id": user["id"]}, {"id": {"$in": accepted_ids}}],
-        },
+        {"status": "confermata", "date": date_q, "$or": [{"owner_id": user_id}, {"id": {"$in": accepted_ids}}]},
         {"_id": 0, "id": 1, "type": 1},
     ):
         played[m["id"]] = m["type"]
-    types = list(played.values())
+    return played
+
+
+def cutoff_30d() -> str:
+    return (date.fromisoformat(today_iso("Europe/Rome")) - timedelta(days=30)).isoformat()
+
+
+@router.get("/me/history", response_model=History)
+async def my_history(user: dict = Depends(current_user)):
+    """Confirmed matches played in the last 30 days."""
+    types = list((await played_matches(user["id"], cutoff_30d())).values())
     return History(last_30_days=len(types), singoli=types.count("singolo"), doppi=types.count("doppio"))
