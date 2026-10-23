@@ -263,10 +263,12 @@ async def summary(user: dict = Depends(current_user)):
         {"user_id": user["id"], "status": "accettata", "applicant_seen": False}
     )
     cancelled = await db.applications.count_documents({"user_id": user["id"], "cancel_seen": False})
-    pending_ch = await db.challenges.count_documents(
-        {"challenged_id": user["id"], "status": "in_attesa", "date": {"$gte": today_iso("Europe/Rome")}}
-    )
+    pending_ch = await db.challenges.count_documents({"challenged_id": user["id"], "status": "in_attesa"})
+    # Any other unseen challenge news: answer to my challenge, or the match date/time set by the opponent.
     ch_updates = await db.challenges.count_documents({"challenger_id": user["id"], "result_seen": False})
+    ch_updates += await db.challenges.count_documents(
+        {"challenged_id": user["id"], "seen_by_challenged": False, "status": {"$ne": "in_attesa"}}
+    )
     return Summary(
         pending_reviews=pending,
         accepted_applications=accepted,

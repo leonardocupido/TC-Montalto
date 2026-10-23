@@ -37,12 +37,13 @@ Bottom nav 4th tab is now "Soci" (/soci) — replaced the "Proponi" tab (proposi
 - played counts = confirmed matches before today (played_history archive + not-yet-cleaned confirmed matches); proposed_total = live non-cancelled proposals + archived owner entries (played_history.owner).
 
 ## Sfide (challenges)
-- Member detail (/soci/:id, not self) has "Sfida <nome>" button (challenge-member-button) → dialog (date, time, message) → POST /api/members/{id}/challenge. 400: self, past date, already a pending challenge to same member; 404 unknown member.
-- Collection challenges {id, challenger_*, challenged_*, date, time, message, status in_attesa|accettata|rifiutata, match_id, seen_by_challenged, result_seen}.
+- Member detail (/soci/:id, not self) has "Sfida <nome>" button (challenge-member-button) → confirm dialog (no fields) → "Lancia la sfida" POST /api/members/{id}/challenge (no body) only sends the notification. 400: self, already an open (in_attesa/accettata) challenge to same member; 404 unknown member.
+- Collection challenges {id, challenger_*, challenged_*, date?, time?, status in_attesa|accettata|programmata|rifiutata, scheduled_by, match_id, seen_by_challenged, result_seen}.
+- Flow: in_attesa → accept → accettata ("Da programmare") → either player POST /api/challenges/{id}/schedule {date,time} → programmata: creates confermata singolo match (owner=challenger, level "Sfida") + accepted application for challenged. Reject → rifiutata.
 - Challenged gets notice: /api/me/summary.pending_challenges (pending, date>=today) → orange header badge "Sfidato!" (header-challenge-badge, highest priority), orange count on Soci tab (nav-soci-count), toast with "Apri" → /sfide.
 - /sfide page (also linked from Soci page "Le mie sfide"): received (from whom, date/time/message, Accetta/Rifiuta) + sent with status. GET /api/challenges → {received, sent}. Visiting calls POST /api/challenges/seen.
-- POST /api/challenges/{id}/accept (challenged only; 400 if handled/expired) → creates a confermata singolo match (owner=challenger, level "Sfida") + accepted application for challenged; it shows on Bacheca, today reminder, stats. POST /api/challenges/{id}/reject.
-- Challenger notified of answer: summary.challenge_updates → Soci tab count + toast.
+- POST /api/challenges/{id}/accept|reject (challenged only, in_attesa only). Schedule: participants only (403 others), 400 if not accettata or past date.
+- Notifications: the other participant is flagged unseen on accept/reject/schedule → summary.challenge_updates → Soci tab count + toast.
 - Nightly cleanup also deletes challenges with date < today.
 
 ## Storico

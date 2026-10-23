@@ -114,12 +114,11 @@ export interface Summary {
   challenge_updates: number;
 }
 
-export type ChallengeStatus = "in_attesa" | "accettata" | "rifiutata";
+export type ChallengeStatus = "in_attesa" | "accettata" | "programmata" | "rifiutata";
 
-export interface ChallengeIn {
+export interface ScheduleIn {
   date: string;
   time: string;
-  message: string;
 }
 
 export interface Challenge {
@@ -129,11 +128,10 @@ export interface Challenge {
   challenger_level: string;
   challenged_id: string;
   challenged_name: string;
-  date: string;
-  time: string;
-  message: string;
+  date: string | null;
+  time: string | null;
   status: ChallengeStatus;
-  expired: boolean;
+  scheduled_by: string | null;
   match_id: string | null;
   unseen: boolean;
   created_at: string;

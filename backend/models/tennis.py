@@ -117,13 +117,12 @@ class Summary(BaseModel):
     challenge_updates: int = 0
 
 
-ChallengeStatus = Literal["in_attesa", "accettata", "rifiutata"]
+ChallengeStatus = Literal["in_attesa", "accettata", "programmata", "rifiutata"]
 
 
-class ChallengeIn(BaseModel):
+class ScheduleIn(BaseModel):
     date: str = Field(pattern=r"^\d{4}-\d{2}-\d{2}$")
     time: str = Field(pattern=r"^\d{2}:\d{2}$")
-    message: str = Field(default="", max_length=300)
 
 
 class Challenge(BaseModel):
@@ -133,11 +132,10 @@ class Challenge(BaseModel):
     challenger_level: str
     challenged_id: str
     challenged_name: str
-    date: str
-    time: str
-    message: str
+    date: Optional[str] = None
+    time: Optional[str] = None
     status: ChallengeStatus
-    expired: bool
+    scheduled_by: Optional[str] = None
     match_id: Optional[str] = None
     unseen: bool
     created_at: datetime
