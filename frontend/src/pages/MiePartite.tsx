@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Check, Phone, X } from "lucide-react";
-import { apiDelete, apiGet, apiPost } from "@/lib/api";
+import { supabase } from "@/lib/supabase";
 import { errorMessage, type Application, type Match, type OwnedMatch } from "@/lib/types";
 import { telHref } from "@/lib/format";
 import MatchCard from "@/components/MatchCard";
@@ -23,23 +23,69 @@ function useOwnerActions() {
     for (const k of ["my-matches", "matches", "summary", "today"]) void qc.invalidateQueries({ queryKey: [k] });
   };
 
-  const decide = useMutation({
-    mutationFn: ({ id, action }: { id: string; action: Decision }) => apiPost<Application>(`/applications/${id}/${action}`),
-    onSuccess: (a) => {
-      toast.success(a.status === "accettata" ? `${a.user_name} è in campo!` : "Candidatura rifiutata");
-      refresh();
-    },
-    onError: (e) => toast.error(errorMessage(e)),
-  });
+const decide = useMutation({
+  mutationFn: async ({
+    id,
+    action,
+  }: {
+    id: string;
+    action: Decision;
+  }) => {
+    const { data, error } = await supabase.rpc(
+      "decide_application",
+      {
+        p_application_id: id,
+        p_action: action,
+      }
+    );
 
-  const cancel = useMutation({
-    mutationFn: (id: string) => apiDelete(`/matches/${id}`),
-    onSuccess: () => {
-      toast.success("Partita annullata");
-      refresh();
-    },
-    onError: (e) => toast.error(errorMessage(e)),
-  });
+    if (error) {
+      throw error;
+    }
+
+    return data as Application;
+  },
+
+  onSuccess: (application) => {
+    toast.success(
+      application.status === "accettata"
+        ? `${application.user_name} è in campo!`
+        : "Candidatura rifiutata"
+    );
+
+    refresh();
+  },
+
+  onError: (error) => {
+    toast.error(errorMessage(error));
+  },
+});
+
+const cancel = useMutation({
+  mutationFn: async (id: string) => {
+    const { data, error } = await supabase.rpc(
+      "cancel_owned_match",
+      {
+        p_match_id: id,
+      }
+    );
+
+    if (error) {
+      throw error;
+    }
+
+    return data;
+  },
+
+  onSuccess: () => {
+    toast.success("Partita annullata");
+    refresh();
+  },
+
+  onError: (error) => {
+    toast.error(errorMessage(error));
+  },
+});
 
   return { decide, cancel };
 }
@@ -138,7 +184,21 @@ function OwnedMatchSection({
 }
 
 export default function MiePartite() {
-  const data = useQuery({ queryKey: ["my-matches"], queryFn: () => apiGet<OwnedMatch[]>("/me/matches") });
+  const data = useQuery<OwnedMatch[]>({
+  queryKey: ["my-matches"],
+
+  queryFn: async () => {
+    const { data, error } = await supabase.rpc(
+      "get_my_owned_matches"
+    );
+
+    if (error) {
+      throw error;
+    }
+
+    return (data ?? []) as OwnedMatch[];
+  },
+});
   const actions = useOwnerActions();
   const items = data.isError ? [] : (data.data ?? []);
   const showEmpty = !data.isLoading && items.length === 0;

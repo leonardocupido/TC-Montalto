@@ -1,16 +1,28 @@
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "motion/react";
 import { BellRing, Clock } from "lucide-react";
-import { apiGet } from "@/lib/api";
+import { supabase } from "@/lib/supabase";
 import type { Match } from "@/lib/types";
 import { initials } from "@/lib/format";
 
 export default function TodayReminder() {
-  const today = useQuery({
-    queryKey: ["today"],
-    queryFn: () => apiGet<Match[]>("/me/today"),
-    refetchInterval: 60000,
-  });
+const today = useQuery<Match[]>({
+  queryKey: ["today"],
+
+  queryFn: async () => {
+    const { data, error } = await supabase.rpc(
+      "get_my_today_matches"
+    );
+
+    if (error) {
+      throw error;
+    }
+
+    return (data ?? []) as Match[];
+  },
+
+  refetchInterval: 60000,
+});
   const items = today.isError ? [] : (today.data ?? []);
   if (items.length === 0) return null;
 

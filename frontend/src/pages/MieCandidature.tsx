@@ -2,8 +2,8 @@ import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { PartyPopper, Phone } from "lucide-react";
-import { apiGet, apiPost } from "@/lib/api";
-import type { MyApplication, Summary } from "@/lib/types";
+import { supabase } from "@/lib/supabase";
+import type { MyApplication } from "@/lib/types";
 import { telHref } from "@/lib/format";
 import MatchCard from "@/components/MatchCard";
 import { buttonVariants } from "@/components/ui/button";
@@ -16,15 +16,57 @@ const STATUS = {
 } as const;
 
 export default function MieCandidature() {
-  const data = useQuery({ queryKey: ["my-applications"], queryFn: () => apiGet<MyApplication[]>("/me/applications") });
+  const data = useQuery<MyApplication[]>({
+  queryKey: ["my-applications"],
+
+  queryFn: async () => {
+    const { data, error } = await supabase.rpc(
+      "get_my_applications"
+    );
+
+    if (error) {
+      throw error;
+    }
+
+    return (data ?? []) as MyApplication[];
+  },
+});
   const items = data.isError ? [] : (data.data ?? []);
   const qc = useQueryClient();
   const hasUnseen = items.some((x) => !x.application.applicant_seen || !x.application.cancel_seen);
   // Opening this page acknowledges new acceptances (idempotent, so StrictMode's double effect is harmless).
   const markSeen = useMutation({
-    mutationFn: () => apiPost<Summary>("/me/applications/seen"),
-    onSuccess: (s) => qc.setQueryData(["summary"], s),
-  });
+  mutationFn: async () => {
+    const { data, error } = await supabase.rpc(
+      "mark_my_applications_seen"
+    );
+
+    if (error) {
+      throw error;
+    }
+
+    return data;
+  },
+
+  onSuccess: () => {
+    qc.setQueryData<MyApplication[]>(
+      ["my-applications"],
+      (current) =>
+        current?.map((item) => ({
+          ...item,
+          application: {
+            ...item.application,
+            applicant_seen: true,
+            cancel_seen: true,
+          },
+        })) ?? []
+    );
+
+    void qc.invalidateQueries({
+      queryKey: ["summary"],
+    });
+  },
+});
   const { mutate } = markSeen;
   useEffect(() => {
     if (hasUnseen) mutate();

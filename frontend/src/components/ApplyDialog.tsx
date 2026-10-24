@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { apiPost } from "@/lib/api";
+import { supabase } from "@/lib/supabase";
 import { useMe } from "@/lib/hooks";
 import { errorMessage, type Application, type ApplyIn, type Match } from "@/lib/types";
 import { formatMatchDate } from "@/lib/format";
@@ -19,7 +19,23 @@ export default function ApplyDialog({ match, open, onOpenChange }: { match: Matc
   const phoneValue = phone ?? me.data?.phone ?? "";
 
   const apply = useMutation({
-    mutationFn: (body: ApplyIn) => apiPost<Application>(`/matches/${match?.id}/apply`, body),
+    mutationFn: async (body: ApplyIn) => {
+  if (!match?.id) {
+    throw new Error("Partita non disponibile");
+  }
+
+  const { data, error } = await supabase.rpc("apply_to_match", {
+    p_match_id: match.id,
+    p_phone: body.phone.trim(),
+    p_message: body.message.trim(),
+  });
+
+  if (error) {
+    throw error;
+  }
+
+  return data as Application;
+},
     onSuccess: () => {
       toast.success("Candidatura inviata! Il proponente riceverà la tua richiesta.");
       void qc.invalidateQueries({ queryKey: ["matches"] });

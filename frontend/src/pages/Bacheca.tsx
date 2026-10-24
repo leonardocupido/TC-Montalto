@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useIsFetching, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, RefreshCw } from "lucide-react";
-import { apiGet } from "@/lib/api";
+import { supabase } from "@/lib/supabase";
 import type { Match } from "@/lib/types";
 import MatchCard from "@/components/MatchCard";
 import ApplyDialog from "@/components/ApplyDialog";
@@ -56,7 +56,19 @@ function MatchAction({ match, onApply }: { match: Match; onApply: () => void }) 
 export default function Bacheca() {
   const [filter, setFilter] = useState<Filter>("tutte");
   const [selected, setSelected] = useState<Match | null>(null);
-  const matches = useQuery({ queryKey: ["matches"], queryFn: () => apiGet<Match[]>("/matches") });
+  const matches = useQuery<Match[]>({
+  queryKey: ["matches"],
+
+  queryFn: async () => {
+    const { data, error } = await supabase.rpc("get_board_matches");
+
+    if (error) {
+      throw error;
+    }
+
+    return (data ?? []) as Match[];
+  },
+});
 
   const list = (matches.isError ? [] : (matches.data ?? [])).filter((m) => matchesFilter(m, filter));
   const openCount = (matches.data ?? []).filter((m) => m.status === "aperta" && !m.is_owner).length;

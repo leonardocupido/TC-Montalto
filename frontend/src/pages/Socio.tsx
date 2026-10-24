@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { format, parseISO } from "date-fns";
 import { it } from "date-fns/locale";
 import { ArrowLeft, Mail, Pencil, Phone, Swords } from "lucide-react";
-import { apiGet } from "@/lib/api";
+import { supabase } from "@/lib/supabase";
 import type { MemberDetail } from "@/lib/types";
 import { initials, telHref } from "@/lib/format";
 import MatchCard from "@/components/MatchCard";
@@ -25,7 +25,30 @@ function StatTile({ label, value, testid, accent }: { label: string; value: numb
 
 export default function Socio() {
   const { id = "" } = useParams();
-  const member = useQuery({ queryKey: ["member", id], queryFn: () => apiGet<MemberDetail>(`/members/${id}`) });
+  const member = useQuery<MemberDetail>({
+  queryKey: ["member", id],
+
+  queryFn: async () => {
+    if (!id) {
+      throw new Error("Socio non valido");
+    }
+
+    const { data, error } = await supabase.rpc(
+      "get_member_detail",
+      {
+        p_member_id: id,
+      }
+    );
+
+    if (error) {
+      throw error;
+    }
+
+    return data as MemberDetail;
+  },
+
+  enabled: !!id,
+});
   const m = member.isError ? undefined : member.data;
   const [challengeOpen, setChallengeOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);

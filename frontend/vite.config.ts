@@ -99,14 +99,7 @@ export default defineConfig(async () => {
       // Build-error rendering: emergent-overlay when it loaded, else Vite's own overlay.
       hmr: hotReloadDisabled ? false : { overlay: !emergentOverlay },
       watch: hotReloadDisabled ? null : { usePolling: true, interval: 300 },
-      // The /api proxy convention: frontend code calls relative /api/*, never an
-      // absolute backend URL. Target is the FastAPI dev server (supervisor: backend).
-      proxy: {
-        "/api": {
-          target: "http://localhost:8001",
-          changeOrigin: true,
-        },
-      },
+      
     },
   } satisfies UserConfig;
 });

@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Swords } from "lucide-react";
-import { apiPost } from "@/lib/api";
+import { supabase } from "@/lib/supabase";
 import { errorMessage, type Challenge } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -19,7 +19,20 @@ export default function ChallengeDialog({
 }) {
   const qc = useQueryClient();
   const send = useMutation({
-    mutationFn: () => apiPost<Challenge>(`/members/${memberId}/challenge`),
+    mutationFn: async () => {
+  const { data, error } = await supabase.rpc(
+    "create_challenge",
+    {
+      p_challenged_id: memberId,
+    }
+  );
+
+  if (error) {
+    throw error;
+  }
+
+  return data as Challenge;
+},
     onSuccess: () => {
       toast.success(`Sfida lanciata! ${memberName} riceverà la notifica.`);
       void qc.invalidateQueries({ queryKey: ["challenges"] });

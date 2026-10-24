@@ -1,10 +1,24 @@
 import { useQuery } from "@tanstack/react-query";
 import { History as HistoryIcon } from "lucide-react";
-import { apiGet } from "@/lib/api";
+import { supabase } from "@/lib/supabase";
 import type { History } from "@/lib/types";
 
 export default function HistoryStat() {
-  const history = useQuery({ queryKey: ["history"], queryFn: () => apiGet<History>("/me/history") });
+  const history = useQuery<History>({
+  queryKey: ["history"],
+
+  queryFn: async () => {
+    const { data, error } = await supabase.rpc(
+      "get_my_history"
+    );
+
+    if (error) {
+      throw error;
+    }
+
+    return data as History;
+  },
+});
   if (history.isError || !history.data) return null;
   const { last_30_days: n, singoli, doppi } = history.data;
 

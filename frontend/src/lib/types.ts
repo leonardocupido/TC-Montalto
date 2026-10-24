@@ -1,5 +1,5 @@
 // Hand-written mirrors of backend/models/tennis.py — keep in sync.
-import { ApiError } from "./api";
+
 
 export type MatchType = "singolo" | "doppio";
 export type MatchStatus = "aperta" | "confermata" | "annullata";
@@ -174,11 +174,32 @@ export interface MemberDetail {
   upcoming: Match[];
 }
 
-export function errorMessage(err: unknown, fallback = "Si è verificato un errore"): string {
-  if (err instanceof ApiError) {
-    const body = err.body as { detail?: unknown } | null;
-    if (body && typeof body.detail === "string") return body.detail;
-    if (body && Array.isArray(body.detail)) return "Controlla i campi inseriti";
+export function errorMessage(
+  err: unknown,
+  fallback = "Si è verificato un errore"
+): string {
+  if (err instanceof Error && err.message) {
+    return err.message;
   }
+
+  if (
+    typeof err === "object" &&
+    err !== null &&
+    "message" in err &&
+    typeof err.message === "string"
+  ) {
+    return err.message;
+  }
+
+  if (
+    typeof err === "object" &&
+    err !== null &&
+    "details" in err &&
+    typeof err.details === "string"
+  ) {
+    return err.details;
+  }
+
   return fallback;
 }
+

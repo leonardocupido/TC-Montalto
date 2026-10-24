@@ -2,7 +2,6 @@ import { useEffect } from "react";
 import { NavLink, Navigate, Outlet, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { CalendarCheck, Handshake, LayoutList, LogOut, UsersRound } from "lucide-react";
-import { ApiError } from "@/lib/api";
 import { useMe, useSummary } from "@/lib/hooks";
 import { endSession } from "@/lib/session";
 import { initials } from "@/lib/format";
@@ -146,7 +145,7 @@ function BottomNav({ pending, newAcc, newCanc, soci }: { pending: number; newAcc
 
 export default function AppShell() {
   const me = useMe();
-  const summary = useSummary(!!me.data && !me.isError);
+  const summary = useSummary(me.isSuccess && !!me.data);
 
   const pending = summary.data?.pending_reviews ?? 0;
   const newAcc = summary.data?.new_acceptances ?? 0;
@@ -195,14 +194,20 @@ export default function AppShell() {
     }
   }, [newCanc]);
 
-  if (me.error instanceof ApiError && me.error.status === 401) {
-    return <Navigate to="/login" replace />;
-  }
+if (me.isSuccess && !me.data) {
+  return <Navigate to="/login" replace />;
+}
 
   return (
     <div className="min-h-dvh bg-background">
       <div className="mx-auto flex min-h-dvh max-w-md flex-col border-x border-border/60 bg-background">
-        <AppHeader user={me.data} pending={pending} newAcc={newAcc} newCanc={newCanc} challenges={pendingCh} />
+        <AppHeader
+  user={me.data ?? undefined}
+  pending={pending}
+  newAcc={newAcc}
+  newCanc={newCanc}
+  challenges={pendingCh}
+/>
         <main className="flex-1 px-4 pb-28 pt-4">
           {me.isLoading ? <div className="h-48 animate-pulse rounded-2xl bg-secondary" /> : <Outlet />}
         </main>

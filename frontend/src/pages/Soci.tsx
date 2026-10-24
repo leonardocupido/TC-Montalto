@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "motion/react";
 import { ChevronRight, Search, Swords } from "lucide-react";
-import { apiGet } from "@/lib/api";
+import { supabase } from "@/lib/supabase";
 import type { MemberSummary } from "@/lib/types";
 import { useSummary } from "@/lib/hooks";
 import { initials } from "@/lib/format";
@@ -14,7 +14,19 @@ const SKELETONS = ["sk-a", "sk-b", "sk-c", "sk-d"];
 
 export default function Soci() {
   const [q, setQ] = useState("");
-  const members = useQuery({ queryKey: ["members"], queryFn: () => apiGet<MemberSummary[]>("/members") });
+  const members = useQuery<MemberSummary[]>({
+  queryKey: ["members"],
+
+  queryFn: async () => {
+    const { data, error } = await supabase.rpc("get_members");
+
+    if (error) {
+      throw error;
+    }
+
+    return (data ?? []) as MemberSummary[];
+  },
+});
   const all = members.isError ? [] : (members.data ?? []);
   const list = all.filter((m) => m.name.toLowerCase().includes(q.trim().toLowerCase()));
   const pendingCh = useSummary(true).data?.pending_challenges ?? 0;

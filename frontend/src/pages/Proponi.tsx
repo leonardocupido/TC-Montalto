@@ -4,8 +4,8 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { format, addDays, nextSaturday } from "date-fns";
 import { Trophy, Users } from "lucide-react";
-import { apiPost } from "@/lib/api";
-import { errorMessage, type Match, type MatchIn, type MatchType } from "@/lib/types";
+import { supabase } from "@/lib/supabase";
+import { errorMessage, type MatchIn, type MatchType } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -33,7 +33,47 @@ export default function Proponi() {
   const set = <K extends keyof MatchIn>(k: K, v: MatchIn[K]) => setForm((f) => ({ ...f, [k]: v }));
 
   const create = useMutation({
-    mutationFn: (body: MatchIn) => apiPost<Match>("/matches", body),
+    mutationFn: async (body: MatchIn) => {
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+
+  if (authError || !user) {
+    throw new Error("Utente non autenticato");
+  }
+
+  const todayRome = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Europe/Rome",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(new Date());
+
+  if (body.date < todayRome) {
+    throw new Error("La data non può essere nel passato");
+  }
+
+  const { data, error } = await supabase
+    .from("matches")
+    .insert({
+      owner_id: user.id,
+      type: body.type,
+      date: body.date,
+      time: body.time,
+      level: body.level.trim(),
+      notes: body.notes.trim(),
+      status: "aperta",
+    })
+    .select("id")
+    .single();
+
+  if (error) {
+    throw error;
+  }
+
+  return data;
+},
     onSuccess: () => {
       toast.success("Partita pubblicata in bacheca!");
       void qc.invalidateQueries({ queryKey: ["matches"] });
