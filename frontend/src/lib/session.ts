@@ -16,6 +16,7 @@ export async function endSession(
     }
   } finally {
     queryClient.clear();
-    window.location.assign(redirectTo);
+    window.history.replaceState(null, "", redirectTo);
+    window.dispatchEvent(new PopStateEvent("popstate"));
   }
 }
