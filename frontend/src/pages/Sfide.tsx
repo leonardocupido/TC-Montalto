@@ -183,6 +183,7 @@ function ChallengeCard({
   busy,
   onDecide,
   onSchedule,
+  onDelete,
   myId,
 }: {
   c: Challenge;
@@ -190,9 +191,9 @@ function ChallengeCard({
   busy: boolean;
   onDecide: (action: "accept" | "reject") => void;
   onSchedule: (body: ScheduleIn) => void;
+  onDelete: () => void;
   myId: string | undefined;
-}) {
-  const other = received
+}) {  const other = received
     ? c.challenger_name
     : c.challenged_name;
 
@@ -333,6 +334,26 @@ function ChallengeCard({
           />
         </>
       )}
+{c.status === "rifiutata" && (
+  <Button
+    type="button"
+    variant="ghost"
+    data-testid="delete-challenge-btn"
+    disabled={busy}
+    onClick={() => {
+      if (
+        window.confirm(
+          "Eliminare definitivamente questa sfida rifiutata?"
+        )
+      ) {
+        onDelete();
+      }
+    }}
+    className="mt-3 h-10 w-full text-slate-400 hover:text-[#F87171]"
+  >
+    Elimina sfida
+  </Button>
+)}
     </li>
   );
 }
@@ -478,32 +499,63 @@ export default function Sfide() {
     },
   });
 
+const remove = useMutation({
+  mutationFn: async (id: string) => {
+    const { data, error } = await supabase.rpc(
+      "delete_rejected_challenge",
+      {
+        p_challenge_id: id,
+      }
+    );
+
+    if (error) {
+      throw error;
+    }
+
+    return data;
+  },
+
+  onSuccess: () => {
+    toast.success("Sfida eliminata");
+    refresh();
+  },
+
+  onError: (error) => {
+    toast.error(
+      errorMessage(error, "Impossibile eliminare la sfida")
+    );
+  },
+});
+
   const busy =
-    decide.isPending || schedule.isPending;
+    decide.isPending || schedule.isPending || remove.isPending;
 
   const renderCard = (
     challenge: Challenge,
     isReceived: boolean
   ) => (
-    <ChallengeCard
-      key={challenge.id}
-      c={challenge}
-      received={isReceived}
-      busy={busy}
-      myId={me.data?.id}
-      onDecide={(action) =>
-        decide.mutate({
-          id: challenge.id,
-          action,
-        })
-      }
-      onSchedule={(body) =>
-        schedule.mutate({
-          id: challenge.id,
-          body,
-        })
-      }
-    />
+<ChallengeCard
+  key={challenge.id}
+  c={challenge}
+  received={isReceived}
+  busy={busy}
+  myId={me.data?.id}
+  onDecide={(action) =>
+    decide.mutate({
+      id: challenge.id,
+      action,
+    })
+  }
+  onSchedule={(body) =>
+    schedule.mutate({
+      id: challenge.id,
+      body,
+    })
+  }
+  onDelete={() =>
+    remove.mutate(challenge.id)
+  }
+/>
   );
 
   return (
